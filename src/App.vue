@@ -180,28 +180,30 @@ function initMap() {
     // Add attribution control to bottom left
     L.control.attribution({ position: 'bottomleft' }).addTo(map.value)
     
-    // Add center indicator
-    const center = map.value.getCenter()
-    centerMarker.value = L.marker([center.lat, center.lng], {
-      icon: L.divIcon({
-        html: `
-          <div class="relative z-[9999] -translate-x-1/2 -translate-y-1/2">
-            <div class="w-16 h-16 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center border-2 border-blue-500/30">
-              <div class="w-8 h-8 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
-              <div class="absolute w-24 h-24 -inset-4 rounded-full border-4 border-blue-500/70 animate-ping"></div>
-            </div>
-            <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400 border border-blue-500/30">
-              Map Center
+    // Create custom center control
+    const CenterControl = L.Control.extend({
+      onAdd: function() {
+        const container = L.DomUtil.create('div', 'leaflet-control-center')
+        container.innerHTML = `
+          <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
+            <div class="relative">
+              <div class="w-16 h-16 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center border-2 border-blue-500/30">
+                <div class="w-8 h-8 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
+                <div class="absolute w-24 h-24 -inset-4 rounded-full border-4 border-blue-500/70 animate-ping"></div>
+              </div>
+              <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                Map Center
+              </div>
             </div>
           </div>
-        `,
-        className: 'center-marker !z-[9999]',
-        iconSize: [1, 1],
-        iconAnchor: [0, 0],
-        popupAnchor: [0, 0]
-      })
+        `
+        return container
+      }
     })
-    centerMarker.value.addTo(map.value)
+    
+    console.log('[MPC] Adding custom center control')
+    new CenterControl({ position: 'center' }).addTo(map.value)
+    console.log('[MPC] Center control added')
     
     // Create light and dark tile layers
     const lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -237,26 +239,14 @@ function initMap() {
     // Only update stations when map is moved after we have user location
     map.value.on('movestart', () => {
       allowAutoCenter.value = false
-      // Enhance center marker visibility during movement
-      if (centerMarker.value) {
-        const icon = centerMarker.value.getIcon()
-        icon.options.html = icon.options.html
-          .replace('animate-pulse', 'animate-pulse opacity-100')
-          .replace('border-blue-500/70', 'border-blue-500/90')
-          .replace('w-6 h-6', 'w-8 h-8')
-          .replace('w-12 h-12', 'w-14 h-14')
-          .replace('w-16 h-16', 'w-20 h-20')
-        centerMarker.value.setIcon(icon)
-      }
+      console.log('[MPC] Map movement started')
     })
     
     map.value.on('move', () => {
-      // Update center marker position and store's map center during movement
-      if (centerMarker.value) {
-        const center = map.value.getCenter()
-        centerMarker.value.setLatLng([center.lat, center.lng])
-        store.updateMapCenter(center.lat, center.lng)
-      }
+      // Update map center in store
+      const center = map.value.getCenter()
+      console.log('[MPC] Map moving, center:', { lat: center.lat, lng: center.lng })
+      store.updateMapCenter(center.lat, center.lng)
     })
     
     map.value.on('moveend', async () => {
@@ -265,16 +255,6 @@ function initMap() {
         
         // Update center marker position and store's map center
         if (centerMarker.value) {
-          // Reset marker to normal size
-          const icon = centerMarker.value.getIcon()
-          icon.options.html = icon.options.html
-            .replace('opacity-100', '')
-            .replace('border-blue-500/90', 'border-blue-500/70')
-            .replace('w-8 h-8', 'w-6 h-6')
-            .replace('w-14 h-14', 'w-12 h-12')
-            .replace('w-20 h-20', 'w-16 h-16')
-          centerMarker.value.setIcon(icon)
-          centerMarker.value.setLatLng([center.lat, center.lng])
           store.updateMapCenter(center.lat, center.lng)
         }
         
