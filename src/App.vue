@@ -92,7 +92,7 @@ function updateMarkers() {
             <div class="w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center">
               <div class="w-4 h-4 rounded-full bg-red-500"></div>
             </div>
-            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md text-xs whitespace-nowrap z-[1000]">
+            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-1 rounded shadow-md text-xs whitespace-nowrap z-[1000] text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
               ${station.name}
             </div>
           </div>
