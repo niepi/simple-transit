@@ -185,20 +185,20 @@ function initMap() {
     centerMarker.value = L.marker([center.lat, center.lng], {
       icon: L.divIcon({
         html: `
-          <div class="relative z-[550]">
-            <div class="w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
-              <div class="w-5 h-5 rounded-full bg-blue-500 animate-pulse"></div>
-              <div class="absolute w-12 h-12 rounded-full border-4 border-blue-500/50 animate-ping"></div>
+          <div class="relative z-[9999]">
+            <div class="w-12 h-12 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center">
+              <div class="w-6 h-6 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
+              <div class="absolute w-16 h-16 rounded-full border-4 border-blue-500/70 animate-ping"></div>
             </div>
-            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-dark-card px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[1000] dark:text-dark">
+            <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400">
               Map Center
             </div>
           </div>
         `,
-        className: 'center-marker !z-[550]',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -36]
+        className: 'center-marker !z-[9999]',
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -48]
       })
     })
     centerMarker.value.addTo(map.value)
@@ -241,9 +241,11 @@ function initMap() {
       if (centerMarker.value) {
         const icon = centerMarker.value.getIcon()
         icon.options.html = icon.options.html
-          .replace('animate-pulse', 'animate-pulse opacity-90')
-          .replace('border-blue-500/50', 'border-blue-500/80')
-          .replace('w-5 h-5', 'w-6 h-6')
+          .replace('animate-pulse', 'animate-pulse opacity-100')
+          .replace('border-blue-500/70', 'border-blue-500/90')
+          .replace('w-6 h-6', 'w-8 h-8')
+          .replace('w-12 h-12', 'w-14 h-14')
+          .replace('w-16 h-16', 'w-20 h-20')
         centerMarker.value.setIcon(icon)
       }
     })
@@ -266,9 +268,11 @@ function initMap() {
           // Reset marker to normal size
           const icon = centerMarker.value.getIcon()
           icon.options.html = icon.options.html
-            .replace('opacity-90', '')
-            .replace('border-blue-500/80', 'border-blue-500/50')
-            .replace('w-6 h-6', 'w-5 h-5')
+            .replace('opacity-100', '')
+            .replace('border-blue-500/90', 'border-blue-500/70')
+            .replace('w-8 h-8', 'w-6 h-6')
+            .replace('w-14 h-14', 'w-12 h-12')
+            .replace('w-20 h-20', 'w-16 h-16')
           centerMarker.value.setIcon(icon)
           centerMarker.value.setLatLng([center.lat, center.lng])
           store.updateMapCenter(center.lat, center.lng)
