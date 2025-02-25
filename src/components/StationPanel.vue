@@ -19,11 +19,23 @@ const favoritesStore = useFavoritesStore()
 const loading = ref(false)
 const refreshInterval = ref<number | null>(null)
 
+// Import preferences store
+const preferencesStore = usePreferencesStore()
+
 // Watch store departures for changes with memoization
 const stationDepartures = computed(() => {
   const deps = store.departures[props.station.id] || []
+  const enabledTypes = preferencesStore.preferences.enabledTransitTypes
+
   return [...deps]
-    .filter(dep => dep && dep.plannedWhen) // Filter out invalid departures
+    .filter(dep => {
+      // Filter out invalid departures
+      if (!dep || !dep.plannedWhen) return false
+      
+      // Filter by transit type
+      const transitType = getTransitType(dep.line.product)
+      return enabledTypes.includes(transitType)
+    })
     .map(dep => ({
       ...dep,
       // Pre-calculate times to avoid repeated Date parsing
