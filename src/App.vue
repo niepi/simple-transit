@@ -180,30 +180,8 @@ function initMap() {
     // Add attribution control to bottom left
     L.control.attribution({ position: 'bottomleft' }).addTo(map.value)
     
-    // Create custom center control
-    const CenterControl = L.Control.extend({
-      onAdd: function() {
-        const container = L.DomUtil.create('div', 'leaflet-control-center')
-        container.innerHTML = `
-          <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
-            <div class="relative">
-              <div class="w-16 h-16 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center border-2 border-blue-500/30">
-                <div class="w-8 h-8 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
-                <div class="absolute w-24 h-24 -inset-4 rounded-full border-4 border-blue-500/70 animate-ping"></div>
-              </div>
-              <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                Map Center
-              </div>
-            </div>
-          </div>
-        `
-        return container
-      }
-    })
-    
-    console.log('[MPC] Adding custom center control')
-    new CenterControl({ position: 'center' }).addTo(map.value)
-    console.log('[MPC] Center control added')
+    // Log map initialization
+    console.log('[MPC] Map initialized')
     
     // Create light and dark tile layers
     const lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -371,6 +349,18 @@ onUnmounted(() => {
       <!-- Map Container -->
       <div ref="mapRef" class="absolute inset-0 z-0">
         <!-- Map will be mounted here -->
+      </div>
+      <!-- Center Indicator -->
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
+        <div class="relative">
+          <div class="w-16 h-16 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center border-2 border-blue-500/30">
+            <div class="w-8 h-8 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
+            <div class="absolute w-24 h-24 -inset-4 rounded-full border-4 border-blue-500/70 animate-ping"></div>
+          </div>
+          <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400 border border-blue-500/30">
+            Map Center
+          </div>
+        </div>
       </div>
       
       <!-- Map Loading State -->
