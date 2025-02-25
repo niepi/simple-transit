@@ -25,6 +25,9 @@ export const useStationsStore = defineStore('stations', () => {
   const error = ref<string | null>(null)
   const userLocation = ref<UserLocation | null>(null)
 
+  // Initialize stations as an empty array
+  if (!stations.value) stations.value = []
+
   // Computed property for sorted stations
   const { coords } = useGeolocation()
 

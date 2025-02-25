@@ -212,6 +212,7 @@ const isMapReady = ref(false)
 
 // Computed property for filtered stations
 const filteredStations = computed(() => {
+  if (!store.sortedStations) return []
   if (favoritesStore.activeView === 'favorites') {
     return store.sortedStations.filter(station => favoritesStore.isFavorite(station.id))
   }
