@@ -5,6 +5,7 @@ import { useFavoritesStore } from '../stores/favorites'
 import type { Station, TransitType } from '../types'
 import type { TagProps } from 'element-plus'
 import TransitIcon from './TransitIcon.vue'
+import TransitFilter from './TransitFilter.vue'
 import { ElTag, ElTooltip } from 'element-plus'
 import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline'
 import { StarIcon, ClockIcon } from '@heroicons/vue/24/solid'
@@ -159,22 +160,48 @@ onUnmounted(() => {
 
 <template>
   <div class="station-panel">
-    <div class="flex justify-between items-start mb-4 group">
-      <div class="flex items-center gap-2 flex-1">
-        <button
-          class="opacity-60 group-hover:opacity-100 transition-opacity"
-          @click="favoritesStore.toggleFavorite(station.id)"
-          :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
-        >
-          <component
-            :is="favoritesStore.isFavorite(station.id) ? StarIcon : StarIconOutline"
-            class="w-6 h-6 text-yellow-500"
-          />
-        </button>
+    <!-- Favorites toggle and filters -->
+    <div class="flex flex-col gap-4 mb-4">
+      <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
+          <button
+            class="opacity-60 hover:opacity-100 transition-opacity"
+            @click="favoritesStore.toggleFavorite(station.id)"
+            :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
+          >
+            <component
+              :is="favoritesStore.isFavorite(station.id) ? StarIcon : StarIconOutline"
+              class="w-6 h-6 text-yellow-500"
+            />
+          </button>
           <h2 class="text-xl font-semibold">{{ station.name }}</h2>
         </div>
+        
+        <button
+          @click="favoritesStore.setActiveView(favoritesStore.activeView === 'all' ? 'favorites' : 'all')"
+          class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dark-card rounded-full shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover"
+        >
+          <component
+            :is="favoritesStore.activeView === 'favorites' ? StarIcon : StarIconOutline"
+            class="w-5 h-5 text-amber-500"
+          />
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ favoritesStore.activeView === 'favorites' ? 'Show All' : 'Show Favorites' }}
+          </span>
+        </button>
       </div>
+      
+      <!-- Transit type filter (only shown in favorites view) -->
+      <transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-4"
+      >
+        <transit-filter v-if="favoritesStore.activeView === 'favorites'" />
+      </transition>
     </div>
     
     <div v-if="loading" class="py-4 text-center text-gray-500 dark:text-dark-secondary">

@@ -79,7 +79,16 @@ export const useStationsStore = defineStore('stations', () => {
   const sortedStations = computed(() => {
     const { userLocation, mapCenter, stations } = state.value
     const referencePoint = mapCenter || userLocation
-    if (!referencePoint) return stations
+    const enabledTypes = preferencesStore.preferences.enabledTransitTypes
+    
+    // First filter by transit type
+    const filteredStations = stations.filter(station => {
+      const stationType = station.products?.[0] || ''
+      const normalizedType = normalizeTransitType(stationType)
+      return enabledTypes.includes(normalizedType)
+    })
+    
+    if (!referencePoint) return filteredStations
 
     return [...stations]
       .map(station => ({
@@ -289,11 +298,22 @@ export const useStationsStore = defineStore('stations', () => {
            typeof station.location.longitude === 'number'
   }
 
+  function normalizeTransitType(type: string): TransitType {
+    type = type.toLowerCase()
+    if (type.includes('suburban') || type === 's') return 'sbahn'
+    if (type.includes('subway') || type === 'u') return 'ubahn'
+    if (type.includes('tram')) return 'tram'
+    if (type.includes('bus')) return 'bus'
+    if (type.includes('ferry')) return 'ferry'
+    return 'bus' // default to bus if unknown
+  }
+
   function normalizeStation(station: VBBLocation): Station {
     return {
       ...station,
       name: station.name.replace(' (Berlin)', '').trim(),
-      distance: undefined
+      distance: undefined,
+      products: station.products
     }
   }
 
