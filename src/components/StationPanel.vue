@@ -48,6 +48,7 @@ const stationDepartures = computed(() => {
       })
     }))
     .sort((a, b) => a.parsedTime - b.parsedTime)
+    .slice(0, preferencesStore.preferences.maxDepartures * (loadingMore.value ? 2 : 1))
 })
 
 // Average walking speed in meters per minute
@@ -126,26 +127,24 @@ async function fetchDepartures(loadMore = false) {
   // Clear any pending fetch
   if (fetchTimeout) {
     clearTimeout(fetchTimeout)
+    fetchTimeout = null
   }
 
-  // Debounce fetch requests
-  fetchTimeout = window.setTimeout(async () => {
-    if (loadMore) {
-      loadingMore.value = true
-    } else {
-      loading.value = true
-    }
+  // Set loading state immediately
+  if (loadMore) {
+    loadingMore.value = true
+  } else {
+    loading.value = true
+  }
 
-    try {
-      await store.fetchDepartures(props.station.id, false, loadMore)
-    } catch (error) {
-      console.error('Error fetching departures:', error)
-    } finally {
-      loading.value = false
-      loadingMore.value = false
-      fetchTimeout = null
-    }
-  }, 300)
+  try {
+    await store.fetchDepartures(props.station.id, false, loadMore)
+  } catch (error) {
+    console.error('Error fetching departures:', error)
+  } finally {
+    loading.value = false
+    loadingMore.value = false
+  }
 }
 
 const REFRESH_INTERVAL = 60000 // 1 minute
