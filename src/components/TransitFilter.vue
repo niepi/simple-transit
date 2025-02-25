@@ -33,7 +33,7 @@ function updateTransitTypes(types: TransitType[]) {
       <el-checkbox 
         v-for="option in transitOptions" 
         :key="option.value"
-        :label="option.value"
+        :value="option.value"
         class="!mr-0"
       >
         <div class="flex items-center gap-2">
