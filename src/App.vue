@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
-import { ArrowPathIcon, SunIcon, MoonIcon } from '@heroicons/vue/24/solid'
+import { ArrowPathIcon, SunIcon, MoonIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import BottomNav from './components/BottomNav.vue'
 import { useGeolocation, usePreferredDark, useStorage } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
@@ -28,6 +28,14 @@ if (!isSupported) {
 // Handle page reload
 function handleReload(): void {
   if (typeof window !== 'undefined') {
+    window.location.reload()
+  }
+}
+
+// Clear localStorage and reload
+function clearLocalStorage(): void {
+  if (typeof window !== 'undefined') {
+    window.localStorage.clear()
     window.location.reload()
   }
 }
@@ -317,17 +325,29 @@ onUnmounted(() => {
 
 <template>
   <div class="h-screen w-full flex md:flex-row flex-col dark:bg-dark transition-colors">
-    <!-- Dark mode toggle -->
-    <button
-      @click="isDark = !isDark"
-      class="absolute top-4 right-4 z-[1000] p-2 rounded-full bg-white dark:bg-dark-card shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover"
-      :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-    >
-      <component
-        :is="isDark ? SunIcon : MoonIcon"
-        class="w-5 h-5 text-gray-600 dark:text-dark"
-      />
-    </button>
+    <!-- Control buttons -->
+    <div class="absolute top-4 right-4 z-[1000] flex gap-2">
+      <!-- Dark mode toggle -->
+      <button
+        @click="isDark = !isDark"
+        class="p-2 rounded-full bg-white dark:bg-dark-card shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover"
+        :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <component
+          :is="isDark ? SunIcon : MoonIcon"
+          class="w-5 h-5 text-gray-600 dark:text-dark"
+        />
+      </button>
+      
+      <!-- Clear localStorage -->
+      <button
+        @click="clearLocalStorage"
+        class="p-2 rounded-full bg-white dark:bg-dark-card shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover hover:bg-red-50 dark:hover:bg-red-900/20"
+        title="Clear local storage and reset app"
+      >
+        <TrashIcon class="w-5 h-5 text-red-500" />
+      </button>
+    </div>
     <!-- Map Section -->
     <div class="w-full md:w-2/3 h-[40vh] md:h-screen relative">
 
