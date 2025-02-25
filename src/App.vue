@@ -125,7 +125,7 @@ function updateMarkers() {
             <div class="w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
               <div class="w-6 h-6 rounded-full bg-blue-500 animate-pulse"></div>
             </div>
-            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[1000]">
+            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[1000] text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
               You are here
             </div>
           </div>
@@ -138,7 +138,7 @@ function updateMarkers() {
     })
     
     userMarker.addTo(map.value)
-    userMarker.bindPopup('<div class="p-2 font-semibold">Your Location</div>', {
+    userMarker.bindPopup('<div class="p-2 font-semibold dark:bg-gray-800 dark:text-white">Your Location</div>', {
       offset: [0, -16]  // Adjust popup offset
     })
     markers.value.push(userMarker)
