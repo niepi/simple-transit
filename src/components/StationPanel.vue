@@ -6,6 +6,8 @@ import type { Station, TransitType } from '../types'
 import type { TagProps } from 'element-plus'
 import TransitIcon from './TransitIcon.vue'
 import { ElTag, ElTooltip } from 'element-plus'
+import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline'
+import { StarIcon, ClockIcon } from '@heroicons/vue/24/solid'
 
 const props = defineProps<{
   station: Station
@@ -164,11 +166,9 @@ onUnmounted(() => {
           @click="favoritesStore.toggleFavorite(station.id)"
           :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
         >
-          <div 
-            :class="[
-              'w-6 h-6 text-yellow-500',
-              favoritesStore.isFavorite(station.id) ? 'i-heroicons:star-solid' : 'i-heroicons:star'
-            ]"
+          <component
+            :is="favoritesStore.isFavorite(station.id) ? StarIcon : StarIconOutline"
+            class="w-6 h-6 text-yellow-500"
           />
         </button>
         <div class="flex items-center gap-2">
@@ -184,7 +184,7 @@ onUnmounted(() => {
               :type="getTimeTagType(station.distance)"
               class="flex items-center gap-1"
             >
-              <div class="i-heroicons:clock-solid w-4 h-4"></div>
+              <ClockIcon class="w-4 h-4" />
               {{ formatTimeAndDistance(station.distance).time }}
             </el-tag>
           </el-tooltip>

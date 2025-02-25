@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
+import { ArrowPathIcon, StarIcon } from '@heroicons/vue/24/solid'
 import { useGeolocation } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
 import { useFavoritesStore } from './stores/favorites'
@@ -332,7 +333,7 @@ onUnmounted(() => {
             class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg transition-colors disabled:opacity-50"
             title="Refresh stations"
           >
-            <div :class="{'animate-spin': store.loading}" class="i-heroicons:arrow-path-solid w-5 h-5"></div>
+            <ArrowPathIcon :class="{'animate-spin': store.loading}" class="w-5 h-5" />
           </button>
         </div>
       
@@ -391,7 +392,7 @@ onUnmounted(() => {
             ]"
           >
             <div class="flex items-center gap-1">
-              <div class="i-heroicons:star-solid w-5 h-5" />
+              <StarIcon class="w-5 h-5" />
               Favorites
             </div>
           </button>
