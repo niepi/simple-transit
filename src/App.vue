@@ -172,6 +172,28 @@ function initMap() {
     // Add attribution control to bottom left
     L.control.attribution({ position: 'bottomleft' }).addTo(map.value)
     
+    // Add center indicator
+    const center = map.value.getCenter()
+    centerMarker.value = L.marker([center.lat, center.lng], {
+      icon: L.divIcon({
+        html: `
+          <div class="relative z-[550]">
+            <div class="w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
+              <div class="w-5 h-5 rounded-full bg-blue-500 animate-pulse"></div>
+            </div>
+            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-dark-card px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[1000] dark:text-dark">
+              Map Center
+            </div>
+          </div>
+        `,
+        className: 'center-marker !z-[550]',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -36]
+      })
+    })
+    centerMarker.value.addTo(map.value)
+    
     // Add tile layer with retina support
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -184,35 +206,30 @@ function initMap() {
     // Only update stations when map is moved after we have user location
     map.value.on('movestart', () => {
       allowAutoCenter.value = false
+      // Add pulse animation to center marker during movement
+      if (centerMarker.value) {
+        const icon = centerMarker.value.getIcon()
+        icon.options.html = icon.options.html.replace('animate-pulse', 'animate-pulse opacity-80')
+        centerMarker.value.setIcon(icon)
+      }
+    })
+    
+    map.value.on('move', () => {
+      // Update center marker position during movement
+      if (centerMarker.value) {
+        const center = map.value.getCenter()
+        centerMarker.value.setLatLng([center.lat, center.lng])
+      }
     })
     
     map.value.on('moveend', async () => {
       if (coords.value.latitude && coords.value.longitude) {
         const center = map.value.getCenter()
         
-        // Update center marker
+        // Update center marker position
         if (centerMarker.value) {
-          centerMarker.value.remove()
+          centerMarker.value.setLatLng([center.lat, center.lng])
         }
-        centerMarker.value = L.marker([center.lat, center.lng], {
-          icon: L.divIcon({
-            html: `
-              <div class="relative z-[550]">
-                <div class="w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center">
-                  <div class="w-4 h-4 rounded-full bg-yellow-500 animate-pulse"></div>
-                </div>
-                <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[1000]">
-                  Search Center
-                </div>
-              </div>
-            `,
-            className: 'center-marker !z-[550]',
-            iconSize: [24, 24],
-            iconAnchor: [12, 24],
-            popupAnchor: [0, -36]
-          })
-        })
-        centerMarker.value.addTo(map.value)
         
         await store.fetchNearbyStations(center.lat, center.lng)
         updateMarkers()
