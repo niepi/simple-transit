@@ -86,16 +86,17 @@ export const useStationsStore = defineStore('stations', () => {
     const referencePoint = mapCenter || userLocation
     const enabledTypes = preferencesStore.preferences.enabledTransitTypes
     
-    // First filter by transit type
-    const filteredStations = stations.filter(station => {
-      const stationType = station.products?.[0] || ''
-      const normalizedType = normalizeTransitType(stationType)
-      return enabledTypes.includes(normalizedType)
-    })
+    // First filter by transit type if in favorites view
+    const filteredStations = favoritesStore.activeView === 'favorites'
+      ? stations.filter(station => {
+          const stationTypes = station.products?.map(normalizeTransitType) || []
+          return stationTypes.some(type => enabledTypes.includes(type))
+        })
+      : stations
     
     if (!referencePoint) return filteredStations
 
-    return [...stations]
+    return [...filteredStations]
       .map(station => ({
         ...station,
         distance: calculateDistance(
@@ -318,8 +319,11 @@ export const useStationsStore = defineStore('stations', () => {
     return {
       id: station.id,
       name: station.name.replace(' (Berlin)', '').trim(),
-      latitude: station.location.latitude,
-      longitude: station.location.longitude,
+      location: {
+        type: station.location.type,
+        latitude: station.location.latitude,
+        longitude: station.location.longitude
+      },
       distance: undefined,
       products: station.products || []
     }
