@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useStationsStore } from '../stores/stations'
+import { useFavoritesStore } from '../stores/favorites'
 import type { Station, TransitType } from '../types'
 import type { TagProps } from 'element-plus'
 import TransitIcon from './TransitIcon.vue'
-import { ElTag, ElTooltip, ElButton } from 'element-plus'
+import { ElTag, ElTooltip } from 'element-plus'
 
 const props = defineProps<{
   station: Station
