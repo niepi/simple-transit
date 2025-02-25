@@ -202,15 +202,20 @@ export const useStationsStore = defineStore('stations', () => {
       return
     }
 
-    // Only use cache for initial load, not when loading more
-    if (!loadMore) {
-      const cached = state.value.departuresCache[stationId]
-      const now = Date.now()
-      
-      if (!force && cached && (now - cached.timestamp) < CACHE_DURATION) {
-        state.value.departures[stationId] = cached.data
-        return
+    // Check cache
+    const cached = state.value.departuresCache[stationId]
+    const now = Date.now()
+    
+    // Only use cache if:
+    // 1. Not loading more
+    // 2. Not forced refresh
+    // 3. Cache exists and is fresh
+    if (!loadMore && !force && cached && (now - cached.timestamp) < CACHE_DURATION) {
+      state.value.departures = {
+        ...state.value.departures,
+        [stationId]: cached.data
       }
+      return
     }
 
     // Cancel any in-flight request for this station
@@ -330,9 +335,12 @@ export const useStationsStore = defineStore('stations', () => {
         };
       }
       
-      state.value.departuresCache[stationId] = {
-        data: state.value.departures[stationId],
-        timestamp: Date.now()
+      // Only update cache on initial load, not when loading more
+      if (!loadMore) {
+        state.value.departuresCache[stationId] = {
+          data: state.value.departures[stationId],
+          timestamp: Date.now()
+        }
       }
     } catch (e) {
       // Don't treat aborted requests as errors
