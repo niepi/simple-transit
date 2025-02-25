@@ -2,9 +2,16 @@
 FROM node:20-alpine as build
 
 WORKDIR /app
+
+# Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci --only=production
+
+# Copy source
 COPY . .
+
+# Build for production
+ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage
