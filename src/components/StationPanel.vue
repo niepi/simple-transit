@@ -18,6 +18,7 @@ const props = defineProps<{
 const store = useStationsStore()
 const favoritesStore = useFavoritesStore()
 const loading = ref(false)
+const loadingMore = ref(false)
 const refreshInterval = ref<number | null>(null)
 
 // Import preferences store
@@ -119,7 +120,7 @@ function getTransitColor(type: TransitType): string {
 // Debounced departure fetching
 let fetchTimeout: number | null = null
 
-async function fetchDepartures() {
+async function fetchDepartures(loadMore = false) {
   if (!props.station?.id?.trim()) return
   
   // Clear any pending fetch
@@ -129,13 +130,19 @@ async function fetchDepartures() {
 
   // Debounce fetch requests
   fetchTimeout = window.setTimeout(async () => {
-    loading.value = true
+    if (loadMore) {
+      loadingMore.value = true
+    } else {
+      loading.value = true
+    }
+
     try {
-      await store.fetchDepartures(props.station.id)
+      await store.fetchDepartures(props.station.id, false, loadMore)
     } catch (error) {
       console.error('Error fetching departures:', error)
     } finally {
       loading.value = false
+      loadingMore.value = false
       fetchTimeout = null
     }
   }, 300)
@@ -211,6 +218,8 @@ onUnmounted(() => {
     </div>
     
     <div v-else class="space-y-2">
+      <!-- Departures list -->
+      <div class="space-y-2">
       <div v-for="departure in stationDepartures" :key="departure.tripId" 
            class="departure-item flex items-center p-2 rounded-lg shadow-sm bg-white dark:bg-dark-card dark:hover:bg-dark-hover transition-colors">
         <div :class="['transit-line px-2 py-1 rounded text-white font-medium flex items-center gap-2', 
@@ -246,6 +255,18 @@ onUnmounted(() => {
             On time
           </div>
         </div>
+      </div>
+
+      <!-- Load more button -->
+      <button
+        v-if="stationDepartures.length > 0"
+        @click="fetchDepartures(true)"
+        :disabled="loadingMore"
+        class="mt-4 w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg shadow transition-colors flex items-center justify-center gap-2"
+      >
+        <div v-if="loadingMore" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        {{ loadingMore ? 'Loading...' : 'Load More Departures' }}
+      </button>
       </div>
     </div>
   </div>

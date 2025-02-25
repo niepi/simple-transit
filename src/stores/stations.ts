@@ -192,8 +192,10 @@ export const useStationsStore = defineStore('stations', () => {
 
   const MAX_DEPARTURES = computed(() => preferencesStore.preferences.maxDepartures)
   const DEPARTURE_DURATION = 30 // minutes
+  const CACHE_DURATION = 30000 // 30 seconds
+  const departureControllers = new Map<string, AbortController>()
 
-  async function fetchDepartures(stationId: string, force: boolean = false) {
+  async function fetchDepartures(stationId: string, force: boolean = false, loadMore: boolean = false) {
     if (!stationId?.trim()) {
       console.error('No station ID provided')
       return
@@ -221,7 +223,10 @@ export const useStationsStore = defineStore('stations', () => {
     try {
       const url = new URL(`https://v6.vbb.transport.rest/stops/${encodeURIComponent(stationId)}/departures`)
       url.searchParams.append('duration', DEPARTURE_DURATION.toString())
-      url.searchParams.append('results', MAX_DEPARTURES.value.toString())
+      
+      // When loading more, request double the departures and filter out existing ones
+      const results = loadMore ? MAX_DEPARTURES.value * 2 : MAX_DEPARTURES.value
+      url.searchParams.append('results', results.toString())
 
       const response = await fetch(url.toString(), {
         signal: controller.signal
@@ -265,9 +270,19 @@ export const useStationsStore = defineStore('stations', () => {
         .slice(0, MAX_DEPARTURES.value)
       
       // Update departures and cache
-      state.value.departures[stationId] = mappedDepartures
+      // When loading more, append to existing departures
+      if (loadMore && state.value.departures[stationId]) {
+        const existingDepartures = state.value.departures[stationId]
+        const newDepartures = mappedDepartures.filter(dep => 
+          !existingDepartures.some(existing => existing.tripId === dep.tripId)
+        )
+        state.value.departures[stationId] = [...existingDepartures, ...newDepartures]
+      } else {
+        state.value.departures[stationId] = mappedDepartures
+      }
+      
       state.value.departuresCache[stationId] = {
-        data: mappedDepartures,
+        data: state.value.departures[stationId],
         timestamp: Date.now()
       }
     } catch (e) {
