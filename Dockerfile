@@ -4,7 +4,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies and build
-COPY package.json .
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Install dependencies with dev dependencies for build
 RUN npm install -g npm@latest && \
     NODE_ENV=development npm install && \
     npm cache clean --force
