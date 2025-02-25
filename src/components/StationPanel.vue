@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useStationsStore } from '../stores/stations'
 import { useFavoritesStore } from '../stores/favorites'
+import { usePreferencesStore } from '../stores/preferences'
 import type { Station, TransitType } from '../types'
 import type { TagProps } from 'element-plus'
 import TransitIcon from './TransitIcon.vue'
