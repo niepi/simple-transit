@@ -291,9 +291,9 @@ onUnmounted(() => {
 
 <template>
   <div class="h-screen w-full flex md:flex-row flex-col overflow-hidden relative">
+    <BottomNav />
     <!-- Map Section -->
     <div class="w-full md:w-2/3 h-[33vh] md:h-screen relative">
-      <BottomNav />
       <!-- Map Container -->
       <div ref="mapRef" class="absolute inset-0 z-0">
         <!-- Map will be mounted here -->
