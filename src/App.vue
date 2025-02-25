@@ -185,20 +185,20 @@ function initMap() {
     centerMarker.value = L.marker([center.lat, center.lng], {
       icon: L.divIcon({
         html: `
-          <div class="relative z-[9999]">
-            <div class="w-12 h-12 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center">
-              <div class="w-6 h-6 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
-              <div class="absolute w-16 h-16 rounded-full border-4 border-blue-500/70 animate-ping"></div>
+          <div class="relative z-[9999] -translate-x-1/2 -translate-y-1/2">
+            <div class="w-16 h-16 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center border-2 border-blue-500/30">
+              <div class="w-8 h-8 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
+              <div class="absolute w-24 h-24 -inset-4 rounded-full border-4 border-blue-500/70 animate-ping"></div>
             </div>
-            <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400">
+            <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400 border border-blue-500/30">
               Map Center
             </div>
           </div>
         `,
         className: 'center-marker !z-[9999]',
-        iconSize: [48, 48],
-        iconAnchor: [24, 48],
-        popupAnchor: [0, -48]
+        iconSize: [1, 1],
+        iconAnchor: [0, 0],
+        popupAnchor: [0, 0]
       })
     })
     centerMarker.value.addTo(map.value)
