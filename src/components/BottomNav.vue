@@ -11,7 +11,7 @@ console.log('[BottomNav] Store:', favoritesStore)
 </script>
 
 <template>
-  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50">
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-[100]" style="z-index: 9999;">
     <div class="w-full max-w-sm mx-auto">
       <div class="flex rounded-lg overflow-hidden shadow-sm">
         <button
