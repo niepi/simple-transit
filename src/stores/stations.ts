@@ -41,6 +41,8 @@ export const useStationsStore = defineStore('stations', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const stations = ref<Station[]>([])
+  const CACHE_DURATION = 30000 // 30 seconds
+  const departureControllers = new Map<string, AbortController>()
 
   const state = ref<StoreState>({
     stations: [],
@@ -192,8 +194,6 @@ export const useStationsStore = defineStore('stations', () => {
 
   const MAX_DEPARTURES = computed(() => preferencesStore.preferences.maxDepartures)
   const DEPARTURE_DURATION = 30 // minutes
-  const CACHE_DURATION = 30000 // 30 seconds
-  const departureControllers = new Map<string, AbortController>()
 
   async function fetchDepartures(stationId: string, force: boolean = false, loadMore: boolean = false) {
     if (!stationId?.trim()) {
