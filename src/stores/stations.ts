@@ -4,6 +4,7 @@ import { useGeolocation } from '@vueuse/core'
 import type { Station, Trip, UserLocation, VBBLocation, VBBDeparture, TransitProduct } from '../types'
 import type { TransitType } from '../types/preferences'
 import { usePreferencesStore } from './preferences'
+import { useFavoritesStore } from './favorites'
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371e3; // Earth's radius in meters
@@ -36,6 +37,7 @@ interface StoreState {
 }
 
 export const useStationsStore = defineStore('stations', () => {
+  const favoritesStore = useFavoritesStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
   const stations = ref<Station[]>([])
@@ -89,7 +91,7 @@ export const useStationsStore = defineStore('stations', () => {
     // First filter by transit type if in favorites view
     const filteredStations = favoritesStore.activeView === 'favorites'
       ? stations.filter(station => {
-          const stationTypes = station.products?.map(normalizeTransitType) || []
+          const stationTypes = (station as Station).products?.map(p => normalizeTransitType(p)) || []
           return stationTypes.some(type => enabledTypes.includes(type))
         })
       : stations
@@ -305,28 +307,29 @@ export const useStationsStore = defineStore('stations', () => {
            typeof station.location.longitude === 'number'
   }
 
-  function normalizeTransitType(type: string): TransitType {
-    type = type.toLowerCase()
-    if (type.includes('suburban') || type === 's') return 'sbahn'
-    if (type.includes('subway') || type === 'u') return 'ubahn'
-    if (type.includes('tram')) return 'tram'
-    if (type.includes('bus')) return 'bus'
-    if (type.includes('ferry')) return 'ferry'
+  function normalizeTransitType(type: string | undefined): TransitType {
+    const normalizedType = (type || '').toLowerCase()
+    if (normalizedType.includes('suburban') || normalizedType === 's') return 'sbahn'
+    if (normalizedType.includes('subway') || normalizedType === 'u') return 'ubahn'
+    if (normalizedType.includes('tram')) return 'tram'
+    if (normalizedType.includes('bus')) return 'bus'
+    if (normalizedType.includes('ferry')) return 'ferry'
     return 'bus' // default to bus if unknown
   }
 
   function normalizeStation(station: VBBLocation): Station {
+    const { id, name, location } = station
     return {
-      id: station.id,
-      name: station.name.replace(' (Berlin)', '').trim(),
+      id,
+      name: name.replace(' (Berlin)', '').trim(),
       location: {
-        type: station.location.type,
-        latitude: station.location.latitude,
-        longitude: station.location.longitude
+        type: location.type,
+        latitude: location.latitude,
+        longitude: location.longitude
       },
       distance: undefined,
       products: station.products || []
-    }
+    } as Station
   }
 
   return {
