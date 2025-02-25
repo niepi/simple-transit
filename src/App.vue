@@ -321,9 +321,9 @@ onUnmounted(() => {
       </div>
     </div>
     <!-- Stations Panel -->
-    <div class="w-full md:w-1/3 h-[67vh] md:h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700">
+    <div class="w-full md:w-1/3 h-[67vh] md:h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 relative">
       <!-- Main Content -->
-      <div class="flex-1 overflow-y-auto p-4">
+      <div class="flex-1 overflow-y-auto p-4 pb-20">
         <div class="flex justify-between items-center mb-4">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
           <button 
@@ -369,7 +369,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Bottom Navigation -->
-      <div class="flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div class="sticky bottom-0 left-0 right-0 flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 z-50">
         <div class="inline-flex rounded-lg overflow-hidden">
           <button
             @click="favoritesStore.activeView = 'all'"
