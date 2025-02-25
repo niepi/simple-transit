@@ -7,6 +7,12 @@ export const useFavoritesStore = defineStore('favorites', () => {
   // Store favorites in localStorage to persist them
   const favoriteIds = useLocalStorage<string[]>('favorite-stations', [])
   const activeView = ref<'all' | 'favorites'>('all')
+  console.log('Initializing favorites store with activeView:', activeView.value)
+
+  function setActiveView(view: 'all' | 'favorites') {
+    console.log('Setting active view to:', view)
+    activeView.value = view
+  }
 
   function toggleFavorite(stationId: string) {
     const index = favoriteIds.value.indexOf(stationId)
@@ -25,6 +31,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
     favoriteIds,
     activeView,
     toggleFavorite,
-    isFavorite
+    isFavorite,
+    setActiveView
   }
 })

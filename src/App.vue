@@ -212,6 +212,10 @@ const isMapReady = ref(false)
 
 // Computed property for filtered stations
 const filteredStations = computed(() => {
+  console.log('Active view:', favoritesStore.activeView)
+  console.log('Sorted stations:', store.sortedStations)
+  console.log('Favorite IDs:', favoritesStore.favoriteIds)
+
   if (!store.sortedStations) return []
   if (favoritesStore.activeView === 'favorites') {
     return store.sortedStations.filter(station => favoritesStore.isFavorite(station.id))
@@ -322,9 +326,9 @@ onUnmounted(() => {
       </div>
     </div>
     <!-- Stations Panel -->
-    <div class="w-full md:w-1/3 h-[67vh] md:h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 relative">
+    <div class="w-full md:w-1/3 h-[67vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 flex flex-col">
       <!-- Main Content -->
-      <div class="flex-1 overflow-y-auto p-4 pb-20">
+      <div class="flex-1 overflow-y-auto p-4">
         <div class="flex justify-between items-center mb-4">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
           <button 
@@ -370,10 +374,10 @@ onUnmounted(() => {
       </div>
 
       <!-- Bottom Navigation -->
-      <div class="sticky bottom-0 left-0 right-0 flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 z-50">
+      <div class="mt-auto flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div class="inline-flex rounded-lg overflow-hidden">
           <button
-            @click="favoritesStore.activeView = 'all'"
+            @click="favoritesStore.setActiveView('all')"
             :class="[
               'px-4 py-2 text-sm font-medium transition-colors',
               favoritesStore.activeView === 'all'
@@ -384,7 +388,7 @@ onUnmounted(() => {
             All Stations
           </button>
           <button
-            @click="favoritesStore.activeView = 'favorites'"
+            @click="favoritesStore.setActiveView('favorites')"
             :class="[
               'px-4 py-2 text-sm font-medium transition-colors',
               favoritesStore.activeView === 'favorites'
