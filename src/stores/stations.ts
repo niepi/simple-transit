@@ -190,6 +190,7 @@ export const useStationsStore = defineStore('stations', () => {
   const DEPARTURE_DURATION = 30 // minutes
 
   async function fetchDepartures(stationId: string, force: boolean = false, loadMore: boolean = false) {
+    console.log('Store fetchDepartures called:', { stationId, force, loadMore });
     if (!stationId?.trim()) {
       console.error('No station ID provided')
       return
@@ -264,19 +265,24 @@ export const useStationsStore = defineStore('stations', () => {
         .slice(0, MAX_DEPARTURES.value)
       
       // Update departures and cache
+      console.log('Before processing departures:', { mappedDepartures: mappedDepartures.length });
+
       // When loading more, append to existing departures
       if (loadMore && state.value.departures[stationId]) {
+        console.log('Load more - existing departures:', state.value.departures[stationId].length);
         const existingDepartures = state.value.departures[stationId]
         const newDepartures = mappedDepartures.filter(dep => 
           !existingDepartures.some(existing => existing.tripId === dep.tripId)
         )
+        console.log('New departures to add:', newDepartures.length);
         state.value.departures[stationId] = [...existingDepartures, ...newDepartures]
           .sort((a, b) => {
             const aTime = new Date(a.plannedWhen || '').getTime()
             const bTime = new Date(b.plannedWhen || '').getTime()
             return aTime - bTime
           })
-          .slice(0, MAX_DEPARTURES.value * (loadMore ? 2 : 1))
+          .slice(0, MAX_DEPARTURES.value * (loadMore ? 2 : 1));
+        console.log('After merging - total departures:', state.value.departures[stationId].length);
       } else {
         state.value.departures[stationId] = mappedDepartures.slice(0, MAX_DEPARTURES.value)
       }

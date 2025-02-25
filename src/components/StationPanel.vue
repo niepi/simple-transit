@@ -122,6 +122,7 @@ function getTransitColor(type: TransitType): string {
 let fetchTimeout: number | null = null
 
 async function fetchDepartures(loadMore = false) {
+  console.log('fetchDepartures called with loadMore:', loadMore);
   if (!props.station?.id?.trim()) return
   
   // Clear any pending fetch
@@ -138,7 +139,9 @@ async function fetchDepartures(loadMore = false) {
   }
 
   try {
+    console.log('Calling store.fetchDepartures with:', { stationId: props.station.id, loadMore });
     await store.fetchDepartures(props.station.id, false, loadMore)
+    console.log('Store departures after fetch:', store.departures[props.station.id]?.length);
   } catch (error) {
     console.error('Error fetching departures:', error)
   } finally {
@@ -259,7 +262,7 @@ onUnmounted(() => {
       <!-- Load more button -->
       <button
         v-if="stationDepartures.length > 0"
-        @click="fetchDepartures(true)"
+        @click="(e) => { console.log('Click event:', e); window.debugDepartures?.(e); fetchDepartures(true); }"
         :disabled="loadingMore"
         class="mt-4 w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg shadow transition-colors flex items-center justify-center gap-2"
       >
