@@ -31,12 +31,14 @@ function handleReload(): void {
     window.location.reload()
   }
 }
+
 const store = useStationsStore()
 const favoritesStore = useFavoritesStore()
 const mapRef = ref<HTMLElement | null>(null)
 const map = ref<any>(null)
 const markers = ref<any[]>([])
 const centerMarker = ref<any>(null)
+const allowAutoCenter = ref(true)
 
 function clearMarkers() {
   markers.value.forEach(marker => marker.remove())
@@ -134,7 +136,6 @@ function initMap() {
 
   try {      
     // Create map instance with default view of Berlin
-    // Create map instance with default view of Berlin
     map.value = L.map(mapRef.value, {
       zoomControl: false, // We'll add controls separately
       attributionControl: false,
@@ -199,10 +200,7 @@ function initMap() {
       }
     })
 
-    // Force a resize after initialization
-    nextTick(() => {
-      map.value.invalidateSize()
-    })
+    isMapReady.value = true
   } catch (error) {
     console.error('Error initializing map:', error)
   }
@@ -210,6 +208,13 @@ function initMap() {
 
 // Wait for container to be ready
 const isMapReady = ref(false)
+
+// Debug logging
+onMounted(() => {
+  console.log('[App] Component mounted')
+  console.log('[App] BottomNav exists:', !!document.querySelector('nav.fixed'))
+  console.log('[App] DOM structure:', document.body.innerHTML)
+})
 
 // Computed property for filtered stations
 const filteredStations = computed(() => {
@@ -219,81 +224,64 @@ const filteredStations = computed(() => {
   console.log('Active view:', favoritesStore.activeView)
   console.log('Sorted stations:', store.sortedStations)
   console.log('Favorite IDs:', favoritesStore.favoriteIds)
-
-  if (!store.sortedStations) return []
+  
   if (favoritesStore.activeView === 'favorites') {
-    return store.sortedStations.filter(station => favoritesStore.isFavorite(station.id))
+    return store.sortedStations.filter(station => 
+      favoritesStore.favoriteIds.includes(station.id)
+    )
   }
   return store.sortedStations
 })
 
-// Watch for map initialization
-const isInitialized = ref(false)
-const allowAutoCenter = ref(true)
-
-// Initialize map and set up watchers
-onMounted(() => {
-  // Add resize listener
-  window.addEventListener('resize', handleResize)
-
-  // Initialize map after container is ready
-  const initInterval = setInterval(() => {
-    if (mapRef.value && !map.value) {
-      clearInterval(initInterval)
-      nextTick(() => {
+// Watch for changes in coordinates
+watch(
+  () => coords.value,
+  async (newCoords) => {
+    // Validate coordinates
+    if (newCoords?.latitude && newCoords?.longitude && 
+        !isNaN(newCoords.latitude) && !isNaN(newCoords.longitude) &&
+        Math.abs(newCoords.latitude) <= 90 && Math.abs(newCoords.longitude) <= 180) {
+      // Clear any previous error
+      geolocationError.value = null
+      
+      // Initialize map if not already done
+      if (!map.value) {
+        await nextTick()
         initMap()
-        isMapReady.value = true
-        isInitialized.value = true
-      })
+      }
+      
+      // Center map on user location if allowed
+      if (allowAutoCenter.value && map.value) {
+        map.value.setView([newCoords.latitude, newCoords.longitude], 15)
+      }
+      
+      try {
+        // Fetch nearby stations
+        await store.fetchNearbyStations(newCoords.latitude, newCoords.longitude)
+        updateMarkers()
+      } catch (error) {
+        console.error('Error loading stations:', error)
+      }
     }
-  }, 100)
+  },
+  { immediate: true }
+)
 
-  // Cleanup interval if component unmounts
-  onUnmounted(() => {
-    clearInterval(initInterval)
-  })
+// Set up window resize handler
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
 })
 
-// Watch for both map initialization and geolocation
-watch([isInitialized, () => coords.value.latitude, () => coords.value.longitude], async ([initialized, lat, lng]) => {
-  if (!initialized || !map.value) return
-  
-  if (lat && lng) {
-    // Clear existing stations and markers
-    store.clearStations()
-    clearMarkers()
-    
-    // Only auto-center if allowed
-    if (allowAutoCenter.value) {
-      map.value.setView([lat, lng], 15)
-    }
-    
-    await store.fetchNearbyStations(lat, lng)
-    updateMarkers()
-  }
-}, { immediate: true })
-
-// Watch for stations changes
-watch(() => store.stations, () => {
-  updateMarkers()
-}, { deep: true })
-
-// Cleanup
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  if (map.value) {
-    map.value.remove()
-    map.value = null
-  }
-  clearMarkers()
 })
 </script>
 
 <template>
-  <div class="h-screen w-full flex md:flex-row flex-col overflow-hidden relative">
-    <BottomNav />
+  <div class="h-screen w-full flex md:flex-row flex-col">
     <!-- Map Section -->
-    <div class="w-full md:w-2/3 h-[33vh] md:h-screen relative">
+    <div class="w-full md:w-2/3 h-[40vh] md:h-screen relative">
+
       <!-- Map Container -->
       <div ref="mapRef" class="absolute inset-0 z-0">
         <!-- Map will be mounted here -->
@@ -330,20 +318,21 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+
     <!-- Stations Panel -->
-    <div class="w-full md:w-1/3 h-[67vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700">
+    <div class="w-full md:w-1/3 h-[60vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 flex flex-col">
       <!-- Main Content -->
-      <div class="h-full overflow-y-auto p-4 pb-24">
+      <div class="flex-1 overflow-y-auto p-4">
         <div class="flex justify-between items-center mb-4">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
           <button 
             v-if="coords.latitude && coords.longitude"
             @click="store.fetchNearbyStations(coords.latitude, coords.longitude)"
-            :disabled="store.loading"
+            :disabled="store.isLoading"
             class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg transition-colors disabled:opacity-50"
             title="Refresh stations"
           >
-            <ArrowPathIcon :class="{'animate-spin': store.loading}" class="w-5 h-5" />
+            <ArrowPathIcon :class="{'animate-spin': store.isLoading}" class="w-5 h-5" />
           </button>
         </div>
       
@@ -353,7 +342,7 @@ onUnmounted(() => {
             Waiting for location access...
           </div>
           
-          <div v-else-if="store.loading" class="text-center py-8 text-gray-500">
+          <div v-else-if="store.isLoading" class="text-center py-8 text-gray-500">
             Loading nearby stations...
           </div>
           
@@ -377,38 +366,8 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-
       <!-- Bottom Navigation -->
-      <div class="mt-auto flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
-        <div class="w-full max-w-sm mx-auto">
-          <div class="flex rounded-lg overflow-hidden shadow-sm w-full">
-            <button
-            @click="favoritesStore.setActiveView('all')"
-            :class="[
-              'flex-1 px-4 py-3 text-sm font-medium transition-colors',
-              favoritesStore.activeView === 'all'
-                ? 'bg-gray-900 text-white dark:bg-gray-700'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
-            ]"
-          >
-            All Stations
-          </button>
-          <button
-            @click="favoritesStore.setActiveView('favorites')"
-            :class="[
-              'flex-1 px-4 py-3 text-sm font-medium transition-colors',
-              favoritesStore.activeView === 'favorites'
-                ? 'bg-gray-900 text-white dark:bg-gray-700'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
-            ]"
-          >
-            <div class="flex items-center gap-1">
-              <StarIcon class="w-5 h-5" />
-              Favorites
-            </div>
-          </button>
-        </div>
-      </div>
+      <BottomNav />
     </div>
   </div>
 </template>

@@ -1,23 +1,28 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import type { Station } from '../types'
 import { useLocalStorage } from '@vueuse/core'
+import { usePreferencesStore } from './preferences'
 
 export const useFavoritesStore = defineStore('favorites', () => {
-  console.log('[FavoritesStore] Initializing store')
-  // Store favorites in localStorage to persist them
+  const preferencesStore = usePreferencesStore()
+  
+  // Store favorites in localStorage
   const favoriteIds = useLocalStorage<string[]>('favorite-stations', [])
-  const activeView = ref<'all' | 'favorites'>('all')
-  console.log('Initializing favorites store with activeView:', activeView.value)
+  
+  // Use preferences store for active view
+  const activeView = computed({
+    get: () => preferencesStore.preferences.lastView,
+    set: (value: 'all' | 'favorites') => {
+      preferencesStore.updatePreference('lastView', value)
+    }
+  })
 
   function setActiveView(view: 'all' | 'favorites') {
-    console.log('[FavoritesStore] Setting active view to:', view)
-    console.trace('[FavoritesStore] Call stack')
     activeView.value = view
   }
 
   function toggleFavorite(stationId: string) {
-    console.log('[FavoritesStore] Toggling favorite:', stationId)
     const index = favoriteIds.value.indexOf(stationId)
     if (index === -1) {
       favoriteIds.value.push(stationId)
@@ -27,7 +32,6 @@ export const useFavoritesStore = defineStore('favorites', () => {
   }
 
   function isFavorite(stationId: string): boolean {
-    console.log('[FavoritesStore] Checking favorite:', stationId)
     return favoriteIds.value.includes(stationId)
   }
 

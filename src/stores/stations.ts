@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Station, Trip, UserLocation, VBBLocation, VBBDeparture } from '../types'
+import { usePreferencesStore } from './preferences'
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371e3; // Earth's radius in meters
@@ -18,67 +19,121 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c; // Distance in meters
 }
 
-export const useStationsStore = defineStore('stations', () => {
-  const stations = ref<Station[]>([])
-  const departures = ref<Record<string, Trip[]>>({})
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const userLocation = ref<UserLocation | null>(null)
+interface DepartureCache {
+  data: Trip[]
+  timestamp: number
+}
 
-  // Initialize stations as an empty array
-  if (!stations.value) stations.value = []
+interface StoreState {
+  stations: Station[]
+  departures: Record<string, Trip[]>
+  departuresCache: Record<string, DepartureCache>
+  isLoading: boolean
+  error: string | null
+  userLocation: UserLocation | null
+}
+
+export const useStationsStore = defineStore('stations', () => {
+  const state = ref<StoreState>({
+    stations: [],
+    departures: {},
+    departuresCache: {},
+    isLoading: false,
+    error: null,
+    userLocation: null
+  })
+
+  // Cache duration in milliseconds (30 seconds)
+  const CACHE_DURATION = 30000
+
+
 
   // Computed property for sorted stations
   const { coords } = useGeolocation()
 
-  // Watch for geolocation changes
-  watch([coords], ([{ latitude, longitude }]) => {
-    if (latitude && longitude) {
-      userLocation.value = { latitude, longitude }
-      fetchNearbyStations(latitude, longitude)
-    }
-  })
+  // Watch for valid geolocation changes
+  watch(
+    () => coords.value,
+    (newCoords) => {
+      if (isValidCoordinates(newCoords)) {
+        state.value.userLocation = {
+          latitude: newCoords.latitude,
+          longitude: newCoords.longitude
+        }
+      }
+    },
+    { immediate: true }
+  )
+  
+  function isValidCoordinates(coords: { latitude?: number; longitude?: number } | null): coords is { latitude: number; longitude: number } {
+    return !!coords?.latitude && 
+           !!coords?.longitude && 
+           !isNaN(coords.latitude) && 
+           !isNaN(coords.longitude) && 
+           Math.abs(coords.latitude) <= 90 && 
+           Math.abs(coords.longitude) <= 180
+  }
 
   const sortedStations = computed(() => {
-    const location = userLocation.value
-    if (!location) return stations.value;
+    const { userLocation, stations } = state.value
+    if (!userLocation) return stations
 
-    return [...stations.value]
+    return [...stations]
       .map(station => ({
         ...station,
         distance: calculateDistance(
-          location.latitude,
-          location.longitude,
+          userLocation.latitude,
+          userLocation.longitude,
           station.location.latitude,
           station.location.longitude
         )
       }))
       .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity))
-      .slice(0, MAX_STATIONS); // Use constant for consistency
+      .slice(0, MAX_STATIONS.value)
   })
 
-  const MAX_STATIONS = 6
-  const MAX_DISTANCE = 1000 // meters
+  const preferencesStore = usePreferencesStore()
+  
+  // Use preferences for configuration
+  const MAX_STATIONS = computed(() => preferencesStore.preferences.maxDepartures)
+  const MAX_DISTANCE = computed(() => preferencesStore.preferences.maxDistance)
+
+  // Keep track of current requests
+  let currentStationsController: AbortController | null = null
+  const departureControllers = new Map<string, AbortController>()
 
   async function fetchNearbyStations(latitude: number, longitude: number) {
-    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-      error.value = 'Invalid coordinates provided'
+    if (!isValidCoordinates({ latitude, longitude })) {
+      state.value.error = 'Invalid coordinates provided'
       return
     }
 
-    loading.value = true
-    error.value = null
-    userLocation.value = { latitude, longitude }
+    state.value.isLoading = true
+    state.value.error = null
+
+    // Cancel any in-flight request
+    if (currentStationsController) {
+      currentStationsController.abort()
+    }
+    currentStationsController = new AbortController()
+
+    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+      loading.value = false
+      error.value = 'Invalid coordinates provided'
+      return
+    }
     
     try {
       const url = new URL('https://v6.vbb.transport.rest/locations/nearby')
       url.searchParams.append('latitude', latitude.toString())
       url.searchParams.append('longitude', longitude.toString())
-      url.searchParams.append('results', MAX_STATIONS.toString())
-      url.searchParams.append('distance', MAX_DISTANCE.toString())
+      url.searchParams.append('results', MAX_STATIONS.value.toString())
+      url.searchParams.append('distance', MAX_DISTANCE.value.toString())
       url.searchParams.append('stops', 'true')
 
-      const response = await fetch(url.toString())
+      const response = await fetch(url.toString(), {
+        signal: currentStationsController.signal
+      })
       
       if (!response.ok) {
         throw new Error(`Failed to fetch stations: ${response.statusText} (${response.status})`)
@@ -90,46 +145,62 @@ export const useStationsStore = defineStore('stations', () => {
         throw new Error('Invalid API response format')
       }
 
-      stations.value = data
-        .filter(station => 
-          station && 
-          typeof station.name === 'string' && 
-          station.location && 
-          typeof station.location.latitude === 'number' && 
-          typeof station.location.longitude === 'number'
-        )
-        .map((station) => ({
-          ...station,
-          name: station.name.replace(' (Berlin)', '').trim(),
-          // Distance will be calculated by sortedStations computed property
-          distance: undefined
-        }))
-        .slice(0, MAX_STATIONS)
+      const validStations = data
+        .filter(isValidStation)
+        .map(normalizeStation)
+        .slice(0, MAX_STATIONS.value)
+
+      state.value.stations = validStations
     } catch (e) {
+      // Don't treat aborted requests as errors
+      if (e instanceof Error && e.name === 'AbortError') {
+        console.log('Station request aborted')
+        return
+      }
       console.error('Error fetching stations:', e)
       error.value = e instanceof Error ? e.message : 'An error occurred fetching stations'
       stations.value = []
     } finally {
-      loading.value = false
+      state.value.isLoading = false
     }
   }
 
-  const MAX_DEPARTURES = 6
+  const MAX_DEPARTURES = computed(() => preferencesStore.preferences.maxDepartures)
   const DEPARTURE_DURATION = 30 // minutes
 
-  async function fetchDepartures(stationId: string) {
+  async function fetchDepartures(stationId: string, force: boolean = false) {
     if (!stationId?.trim()) {
       console.error('No station ID provided')
       return
     }
+
+    // Check cache first
+    const cached = state.value.departuresCache[stationId]
+    const now = Date.now()
+    
+    if (!force && cached && (now - cached.timestamp) < CACHE_DURATION) {
+      state.value.departures[stationId] = cached.data
+      return
+    }
+
+    // Cancel any in-flight request for this station
+    const existingController = departureControllers.get(stationId)
+    if (existingController) {
+      existingController.abort()
+      departureControllers.delete(stationId)
+    }
+    
+    const controller = new AbortController()
+    departureControllers.set(stationId, controller)
     
     try {
       const url = new URL(`https://v6.vbb.transport.rest/stops/${encodeURIComponent(stationId)}/departures`)
       url.searchParams.append('duration', DEPARTURE_DURATION.toString())
-      url.searchParams.append('results', MAX_DEPARTURES.toString())
+      url.searchParams.append('results', MAX_DEPARTURES.value.toString())
 
-      const response = await fetch(url.toString()
-      )
+      const response = await fetch(url.toString(), {
+        signal: controller.signal
+      })
       
       if (!response.ok) {
         throw new Error(`Failed to fetch departures: ${response.statusText}`)
@@ -142,52 +213,87 @@ export const useStationsStore = defineStore('stations', () => {
       
       const mappedDepartures = (departuresArray as VBBDeparture[])
         .filter(departure => {
-          return departure?.line?.name && departure?.direction
+          return departure?.line?.name && 
+                 departure?.direction && 
+                 (departure.when || departure.plannedWhen)
         })
         .map((departure) => {
-          const now = new Date()
-          const plannedWhen = departure.plannedWhen ? new Date(departure.plannedWhen) : now
-          const actualWhen = departure.when ? new Date(departure.when) : plannedWhen
-          const delayInMinutes = Math.round((actualWhen.getTime() - plannedWhen.getTime()) / 60000)
-          
-          const product = departure.line.product || departure.line.mode || 'bus'
+          const plannedTime = departure.plannedWhen ? new Date(departure.plannedWhen) : new Date()
+          const actualTime = departure.when ? new Date(departure.when) : plannedTime
+          const delayMinutes = Math.round((actualTime.getTime() - plannedTime.getTime()) / 60000)
           
           return {
-            tripId: departure.tripId || `${plannedWhen.toISOString()}-${departure.line.name}`,
+            tripId: departure.tripId || `${plannedTime.toISOString()}-${departure.line.name}`,
             line: {
               name: departure.line.name,
-              product: product.toLowerCase()
+              product: (departure.line.product || departure.line.mode || 'bus').toLowerCase()
             },
             direction: departure.direction,
-            when: actualWhen.toISOString(),
-            plannedWhen: plannedWhen.toISOString(),
-            delay: delayInMinutes,
+            when: actualTime.toISOString(),
+            plannedWhen: plannedTime.toISOString(),
+            delay: delayMinutes,
             cancelled: Boolean(departure.cancelled),
             platform: departure.platform ? String(departure.platform) : ''
           }
         })
-        .slice(0, 4)
+        .sort((a, b) => new Date(a.when).getTime() - new Date(b.when).getTime())
+        .slice(0, MAX_DEPARTURES.value)
       
-      // Update departures
-      departures.value[stationId] = mappedDepartures
+      // Update departures and cache
+      state.value.departures[stationId] = mappedDepartures
+      state.value.departuresCache[stationId] = {
+        data: mappedDepartures,
+        timestamp: Date.now()
+      }
     } catch (e) {
+      // Don't treat aborted requests as errors
+      if (e instanceof Error && e.name === 'AbortError') {
+        console.log(`Departures request aborted for station ${stationId}`)
+        return
+      }
+      departureControllers.delete(stationId)
       console.error('Error fetching departures:', e)
-      departures.value[stationId] = []
+      state.value.departures[stationId] = []
+      state.value.error = e instanceof Error ? e.message : 'An error occurred fetching departures'
     }
   }
 
   function clearStations() {
-    stations.value = []
-    departures.value = {}
-    error.value = null
-    userLocation.value = null
+    // Abort all pending requests
+    departureControllers.forEach(controller => controller.abort())
+    departureControllers.clear()
+
+    state.value = {
+      stations: [],
+      departures: {},
+      departuresCache: {},
+      isLoading: false,
+      error: null,
+      userLocation: null
+    }
+  }
+
+  function isValidStation(station: VBBLocation): boolean {
+    return !!station &&
+           typeof station.name === 'string' &&
+           !!station.location &&
+           typeof station.location.latitude === 'number' &&
+           typeof station.location.longitude === 'number'
+  }
+
+  function normalizeStation(station: VBBLocation): Station {
+    return {
+      ...station,
+      name: station.name.replace(' (Berlin)', '').trim(),
+      distance: undefined
+    }
   }
 
   return {
-    stations,
-    departures,
-    loading,
-    error,
+    stations: computed(() => state.value.stations),
+    departures: computed(() => state.value.departures),
+    isLoading: computed(() => state.value.isLoading),
+    error: computed(() => state.value.error),
     sortedStations,
     fetchNearbyStations,
     fetchDepartures,

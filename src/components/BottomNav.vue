@@ -5,23 +5,23 @@ import { useFavoritesStore } from '../stores/favorites'
 
 const favoritesStore = useFavoritesStore()
 
-console.log('[BottomNav] Mounted')
+console.log('[BottomNav] Component initialized')
 console.log('[BottomNav] Active view:', favoritesStore.activeView)
 console.log('[BottomNav] Store:', favoritesStore)
+console.log('[BottomNav] Template structure:', document.querySelector('nav.fixed'))
 </script>
 
 <template>
-  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg" style="z-index: 9999;">
-    <div class="absolute inset-0 bg-white dark:bg-gray-800 opacity-95"></div>
-    <div class="w-full max-w-sm mx-auto relative">
-      <div class="flex rounded-lg overflow-hidden shadow-sm">
+  <div class="bg-white border-t border-gray-200 p-2 md:p-4">
+    <nav class="w-full max-w-sm mx-auto bg-blue-500 rounded-lg shadow-lg overflow-hidden">
+      <div class="flex">
         <button
           @click="favoritesStore.setActiveView('all')"
           :class="[
             'flex-1 px-4 py-3 text-sm font-medium transition-colors',
             favoritesStore.activeView === 'all'
-              ? 'bg-gray-900 text-white dark:bg-gray-700'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
+              ? 'bg-blue-700 text-white'
+              : 'bg-blue-400 text-white hover:bg-blue-600'
           ]"
         >
           All Stations
@@ -31,16 +31,33 @@ console.log('[BottomNav] Store:', favoritesStore)
           :class="[
             'flex-1 px-4 py-3 text-sm font-medium transition-colors',
             favoritesStore.activeView === 'favorites'
-              ? 'bg-gray-900 text-white dark:bg-gray-700'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
+              ? 'bg-blue-700 text-white'
+              : 'bg-blue-400 text-white hover:bg-blue-600'
           ]"
         >
-          <div class="flex items-center justify-center gap-1">
+          <div class="flex items-center justify-center gap-2">
             <StarIcon class="w-5 h-5" />
             <span>Favorites</span>
           </div>
         </button>
       </div>
-    </div>
+    </nav>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.debug-outline {
+  outline: 1px solid red;
+  outline-offset: -1px;
+}
+</style>
