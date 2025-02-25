@@ -202,14 +202,36 @@ function initMap() {
     })
     centerMarker.value.addTo(map.value)
     
-    // Add tile layer with retina support
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Create light and dark tile layers
+    const lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 19,
       detectRetina: true,
       className: 'map-tiles'
-    }).addTo(map.value)
+    })
+
+    const darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19,
+      detectRetina: true,
+      className: 'map-tiles'
+    })
+
+    // Add initial tile layer based on dark mode
+    ;(isDark.value ? darkTileLayer : lightTileLayer).addTo(map.value)
+
+    // Watch dark mode changes to update map theme
+    watch(isDark, (dark) => {
+      if (dark) {
+        map.value.removeLayer(lightTileLayer)
+        darkTileLayer.addTo(map.value)
+      } else {
+        map.value.removeLayer(darkTileLayer)
+        lightTileLayer.addTo(map.value)
+      }
+    })
     
     // Only update stations when map is moved after we have user location
     map.value.on('movestart', () => {
