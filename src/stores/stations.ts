@@ -202,13 +202,15 @@ export const useStationsStore = defineStore('stations', () => {
       return
     }
 
-    // Check cache first
-    const cached = state.value.departuresCache[stationId]
-    const now = Date.now()
-    
-    if (!force && cached && (now - cached.timestamp) < CACHE_DURATION) {
-      state.value.departures[stationId] = cached.data
-      return
+    // Only use cache for initial load, not when loading more
+    if (!loadMore) {
+      const cached = state.value.departuresCache[stationId]
+      const now = Date.now()
+      
+      if (!force && cached && (now - cached.timestamp) < CACHE_DURATION) {
+        state.value.departures[stationId] = cached.data
+        return
+      }
     }
 
     // Cancel any in-flight request for this station
@@ -225,9 +227,17 @@ export const useStationsStore = defineStore('stations', () => {
       const url = new URL(`https://v6.vbb.transport.rest/stops/${encodeURIComponent(stationId)}/departures`)
       url.searchParams.append('duration', DEPARTURE_DURATION.toString())
       
-      // When loading more, request double the departures and filter out existing ones
-      const results = loadMore ? MAX_DEPARTURES.value * 2 : MAX_DEPARTURES.value
+      // When loading more, request more departures
+      const results = loadMore ? MAX_DEPARTURES.value * 3 : MAX_DEPARTURES.value
       url.searchParams.append('results', results.toString())
+      
+      // When loading more, skip existing departures
+      if (loadMore && state.value.departures[stationId]) {
+        const lastDeparture = state.value.departures[stationId].slice(-1)[0]
+        if (lastDeparture?.plannedWhen) {
+          url.searchParams.append('when', lastDeparture.plannedWhen)
+        }
+      }
 
       const response = await fetch(url.toString(), {
         signal: controller.signal
