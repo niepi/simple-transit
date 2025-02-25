@@ -47,6 +47,7 @@ const map = ref<any>(null)
 const markers = ref<any[]>([])
 const centerMarker = ref<any>(null)
 const allowAutoCenter = ref(true)
+const isMapCentered = ref(true)
 
 // Dark mode handling
 const isDark = useStorage('simple-transit-dark-mode', usePreferredDark().value)
@@ -217,6 +218,7 @@ function initMap() {
     // Only update stations when map is moved after we have user location
     map.value.on('movestart', () => {
       allowAutoCenter.value = false
+      isMapCentered.value = false
       console.log('[MPC] Map movement started')
     })
     
@@ -230,6 +232,10 @@ function initMap() {
     map.value.on('moveend', async () => {
       if (coords.value.latitude && coords.value.longitude) {
         const center = map.value.getCenter()
+        // Check if map is centered on user location
+        const userLatLng = L.latLng(coords.value.latitude, coords.value.longitude)
+        const centerLatLng = L.latLng(center.lat, center.lng)
+        isMapCentered.value = userLatLng.distanceTo(centerLatLng) < 10 // Within 10 meters
         
         // Update center marker position and store's map center
         if (centerMarker.value) {
@@ -351,13 +357,12 @@ onUnmounted(() => {
         <!-- Map will be mounted here -->
       </div>
       <!-- Center Indicator -->
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
+      <div v-if="!isMapCentered" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
         <div class="relative">
-          <div class="w-16 h-16 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center border-2 border-blue-500/30">
-            <div class="w-8 h-8 rounded-full bg-blue-500 animate-pulse shadow-lg"></div>
-            <div class="absolute w-24 h-24 -inset-4 rounded-full border-4 border-blue-500/70 animate-ping"></div>
+          <div class="w-6 h-6 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center">
+            <div class="w-4 h-4 rounded-full bg-blue-500 animate-pulse"></div>
           </div>
-          <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-3 py-1.5 rounded-full shadow-lg text-sm font-bold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400 border border-blue-500/30">
+          <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400">
             Map Center
           </div>
         </div>
