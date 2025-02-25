@@ -215,10 +215,11 @@ function initMap() {
     })
     
     map.value.on('move', () => {
-      // Update center marker position during movement
+      // Update center marker position and store's map center during movement
       if (centerMarker.value) {
         const center = map.value.getCenter()
         centerMarker.value.setLatLng([center.lat, center.lng])
+        store.updateMapCenter(center.lat, center.lng)
       }
     })
     
@@ -226,9 +227,10 @@ function initMap() {
       if (coords.value.latitude && coords.value.longitude) {
         const center = map.value.getCenter()
         
-        // Update center marker position
+        // Update center marker position and store's map center
         if (centerMarker.value) {
           centerMarker.value.setLatLng([center.lat, center.lng])
+          store.updateMapCenter(center.lat, center.lng)
         }
         
         await store.fetchNearbyStations(center.lat, center.lng)

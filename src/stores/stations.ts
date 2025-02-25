@@ -31,6 +31,7 @@ interface StoreState {
   isLoading: boolean
   error: string | null
   userLocation: UserLocation | null
+  mapCenter: UserLocation | null
 }
 
 export const useStationsStore = defineStore('stations', () => {
@@ -40,7 +41,8 @@ export const useStationsStore = defineStore('stations', () => {
     departuresCache: {},
     isLoading: false,
     error: null,
-    userLocation: null
+    userLocation: null,
+    mapCenter: null
   })
 
   // Cache duration in milliseconds (30 seconds)
@@ -75,15 +77,16 @@ export const useStationsStore = defineStore('stations', () => {
   }
 
   const sortedStations = computed(() => {
-    const { userLocation, stations } = state.value
-    if (!userLocation) return stations
+    const { userLocation, mapCenter, stations } = state.value
+    const referencePoint = mapCenter || userLocation
+    if (!referencePoint) return stations
 
     return [...stations]
       .map(station => ({
         ...station,
         distance: calculateDistance(
-          userLocation.latitude,
-          userLocation.longitude,
+          referencePoint.latitude,
+          referencePoint.longitude,
           station.location.latitude,
           station.location.longitude
         )
@@ -91,6 +94,11 @@ export const useStationsStore = defineStore('stations', () => {
       .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity))
       .slice(0, MAX_STATIONS.value)
   })
+
+  // Function to update map center
+  function updateMapCenter(latitude: number, longitude: number) {
+    state.value.mapCenter = { latitude, longitude }
+  }
 
   const preferencesStore = usePreferencesStore()
   
@@ -297,6 +305,7 @@ export const useStationsStore = defineStore('stations', () => {
     sortedStations,
     fetchNearbyStations,
     fetchDepartures,
-    clearStations
+    clearStations,
+    updateMapCenter
   }
 })
