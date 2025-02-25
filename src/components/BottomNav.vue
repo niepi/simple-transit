@@ -4,6 +4,10 @@ import { StarIcon } from '@heroicons/vue/24/solid'
 import { useFavoritesStore } from '../stores/favorites'
 
 const favoritesStore = useFavoritesStore()
+
+console.log('[BottomNav] Mounted')
+console.log('[BottomNav] Active view:', favoritesStore.activeView)
+console.log('[BottomNav] Store:', favoritesStore)
 </script>
 
 <template>

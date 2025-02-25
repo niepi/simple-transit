@@ -213,6 +213,9 @@ const isMapReady = ref(false)
 
 // Computed property for filtered stations
 const filteredStations = computed(() => {
+  console.log('[App] Computing filtered stations')
+  console.log('[App] Active view:', favoritesStore.activeView)
+  console.log('[App] Sorted stations:', store.sortedStations)
   console.log('Active view:', favoritesStore.activeView)
   console.log('Sorted stations:', store.sortedStations)
   console.log('Favorite IDs:', favoritesStore.favoriteIds)
