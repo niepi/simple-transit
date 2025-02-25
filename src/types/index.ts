@@ -15,7 +15,6 @@ export interface Station {
     longitude: number
   }
   distance?: number
-  products: string[]
 }
 
 export type TransitProduct = 'suburban' | 'subway' | 'tram' | 'bus' | 'ferry'
@@ -42,7 +41,6 @@ export interface VBBLocation {
     latitude: number
     longitude: number
   }
-  products: string[]
 }
 
 export interface VBBDeparture {
