@@ -287,30 +287,47 @@ export const useStationsStore = defineStore('stations', () => {
         loadMore
       });
 
+      // Create a new array to trigger reactivity
+      const newDepartures = [...mappedDepartures];
+
       // When loading more, append to existing departures
       if (loadMore && state.value.departures[stationId]) {
-        const existingDepartures = state.value.departures[stationId]
-        const newDepartures = mappedDepartures.filter(dep => 
+        const existingDepartures = [...state.value.departures[stationId]]
+        
+        // Filter out duplicates
+        const uniqueDepartures = newDepartures.filter(dep => 
           !existingDepartures.some(existing => existing.tripId === dep.tripId)
         )
-        const merged = [...existingDepartures, ...newDepartures];
+
         console.log('Merging departures:', {
           existing: existingDepartures.length,
-          new: newDepartures.length,
-          total: merged.length
+          new: uniqueDepartures.length,
+          total: existingDepartures.length + uniqueDepartures.length
         });
-        state.value.departures[stationId] = merged.sort((a, b) => {
-            const aTime = new Date(a.plannedWhen || '').getTime()
-            const bTime = new Date(b.plannedWhen || '').getTime()
-            return aTime - bTime
-          })
-          .slice(0, MAX_DEPARTURES.value * (loadMore ? 2 : 1));
+
+        // Create a new merged array and sort
+        const allDepartures = [...existingDepartures, ...uniqueDepartures].sort((a, b) => {
+          const aTime = new Date(a.plannedWhen || '').getTime()
+          const bTime = new Date(b.plannedWhen || '').getTime()
+          return aTime - bTime
+        });
+
+        // Update state with new array
+        state.value.departures = {
+          ...state.value.departures,
+          [stationId]: allDepartures.slice(0, MAX_DEPARTURES.value * (loadMore ? 2 : 1))
+        };
+
         console.log('Final departures:', {
           count: state.value.departures[stationId].length,
           limit: MAX_DEPARTURES.value * (loadMore ? 2 : 1)
         });
       } else {
-        state.value.departures[stationId] = mappedDepartures.slice(0, MAX_DEPARTURES.value)
+        // Update state with new array for initial load
+        state.value.departures = {
+          ...state.value.departures,
+          [stationId]: newDepartures.slice(0, MAX_DEPARTURES.value)
+        };
       }
       
       state.value.departuresCache[stationId] = {

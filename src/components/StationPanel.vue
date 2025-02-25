@@ -28,8 +28,15 @@ const preferencesStore = usePreferencesStore()
 const stationDepartures = computed(() => {
   const deps = store.departures[props.station.id] || []
   const enabledTypes = preferencesStore.preferences.enabledTransitTypes
+  const maxDeps = preferencesStore.preferences.maxDepartures * (loadingMore.value ? 2 : 1)
 
-  return [...deps]
+  console.log('Computing departures:', {
+    total: deps.length,
+    maxDeps,
+    loadingMore: loadingMore.value
+  })
+
+  const filtered = [...deps]
     .filter(dep => {
       // Filter out invalid departures
       if (!dep || !dep.plannedWhen) return false
@@ -48,7 +55,14 @@ const stationDepartures = computed(() => {
       })
     }))
     .sort((a, b) => a.parsedTime - b.parsedTime)
-    .slice(0, preferencesStore.preferences.maxDepartures * (loadingMore.value ? 2 : 1))
+    .slice(0, maxDeps)
+
+  console.log('Filtered departures:', {
+    count: filtered.length,
+    maxDeps
+  })
+
+  return filtered
 })
 
 // Average walking speed in meters per minute
