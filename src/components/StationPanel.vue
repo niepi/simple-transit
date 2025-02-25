@@ -173,21 +173,6 @@ onUnmounted(() => {
         </button>
         <div class="flex items-center gap-2">
           <h2 class="text-xl font-semibold">{{ station.name }}</h2>
-          <el-tooltip
-            v-if="station.distance !== undefined"
-            effect="dark"
-            placement="right"
-            :content="`Distance: ${formatTimeAndDistance(station.distance).distance}`"
-          >
-            <el-tag 
-              size="small" 
-              :type="getTimeTagType(station.distance)"
-              class="flex items-center gap-1"
-            >
-              <ClockIcon class="w-4 h-4" />
-              {{ formatTimeAndDistance(station.distance).time }}
-            </el-tag>
-          </el-tooltip>
         </div>
       </div>
     </div>
