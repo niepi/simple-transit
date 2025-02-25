@@ -54,11 +54,6 @@ export const useStationsStore = defineStore('stations', () => {
     mapCenter: null
   })
 
-  // Cache duration in milliseconds (30 seconds)
-  const CACHE_DURATION = 30000
-
-
-
   // Computed property for sorted stations
   const { coords } = useGeolocation()
 
@@ -127,7 +122,6 @@ export const useStationsStore = defineStore('stations', () => {
 
   // Keep track of current requests
   let currentStationsController: AbortController | null = null
-  const departureControllers = new Map<string, AbortController>()
 
   async function fetchNearbyStations(latitude: number, longitude: number) {
     if (!isValidCoordinates({ latitude, longitude })) {
