@@ -7,7 +7,10 @@ import TransitIcon from './TransitIcon.vue'
 
 const store = usePreferencesStore()
 
-const transitTypes = computed(() => store.preferences.enabledTransitTypes)
+const transitTypes = computed({
+  get: () => store.preferences.enabledTransitTypes,
+  set: (types: TransitType[]) => store.updatePreference('enabledTransitTypes', types)
+})
 
 const transitOptions = [
   { label: 'S-Bahn', value: 'sbahn' },
@@ -16,10 +19,6 @@ const transitOptions = [
   { label: 'Bus', value: 'bus' },
   { label: 'Ferry', value: 'ferry' }
 ] as const
-
-function updateTransitTypes(types: TransitType[]) {
-  store.updatePreference('enabledTransitTypes', types)
-}
 </script>
 
 <template>
@@ -27,13 +26,12 @@ function updateTransitTypes(types: TransitType[]) {
     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Transit Types</h3>
     <el-checkbox-group 
       v-model="transitTypes" 
-      @change="updateTransitTypes"
       class="flex flex-wrap gap-2"
     >
       <el-checkbox 
         v-for="option in transitOptions" 
         :key="option.value"
-        :value="option.value"
+        :label="option.value"
         class="!mr-0"
       >
         <div class="flex items-center gap-2">
