@@ -3,10 +3,10 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
-# Update npm and install dependencies
-COPY package*.json ./
+# Install dependencies with package-lock.json generation
+COPY package.json ./
 RUN npm install -g npm@latest && \
-    npm ci
+    npm install
 
 # Copy source
 COPY . .
