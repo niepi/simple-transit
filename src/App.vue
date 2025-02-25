@@ -360,10 +360,7 @@ onUnmounted(() => {
       <div v-if="!isMapCentered" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
         <div class="relative">
           <div class="w-6 h-6 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center">
-            <div class="w-4 h-4 rounded-full bg-blue-500 animate-pulse"></div>
-          </div>
-          <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-dark-card/90 px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[9999] text-blue-600 dark:text-blue-400">
-            Map Center
+            <div class="w-4 h-4 rounded-full bg-emerald-500 animate-pulse"></div>
           </div>
         </div>
       </div>
