@@ -91,8 +91,8 @@ export const useStationsStore = defineStore('stations', () => {
     // First filter by transit type if in favorites view
     const filteredStations = favoritesStore.activeView === 'favorites'
       ? stations.filter(station => {
-          const stationTypes = (station as Station).products?.map(p => normalizeTransitType(p)) || []
-          return stationTypes.some(type => enabledTypes.includes(type))
+          const stationTypes = station.products.map((product: string) => normalizeTransitType(product))
+          return stationTypes.some((type: TransitType) => enabledTypes.includes(type))
         })
       : stations
     
@@ -318,18 +318,19 @@ export const useStationsStore = defineStore('stations', () => {
   }
 
   function normalizeStation(station: VBBLocation): Station {
-    const { id, name, location } = station
+    const { id, name, type, location, products } = station
     return {
       id,
       name: name.replace(' (Berlin)', '').trim(),
+      type,
       location: {
         type: location.type,
         latitude: location.latitude,
         longitude: location.longitude
       },
       distance: undefined,
-      products: station.products || []
-    } as Station
+      products: products
+    }
   }
 
   return {

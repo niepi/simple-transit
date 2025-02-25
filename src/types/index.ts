@@ -8,6 +8,7 @@ export interface UserLocation {
 export interface Station {
   id: string
   name: string
+  type: string
   location: {
     type: string
     latitude: number
@@ -41,7 +42,7 @@ export interface VBBLocation {
     latitude: number
     longitude: number
   }
-  products?: string[]
+  products: string[]
 }
 
 export interface VBBDeparture {
