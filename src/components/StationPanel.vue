@@ -192,17 +192,17 @@ onUnmounted(() => {
       </div>
     </div>
     
-    <div v-if="loading" class="py-4 text-center text-gray-500">
+    <div v-if="loading" class="py-4 text-center text-gray-500 dark:text-dark-secondary">
       Loading departures...
     </div>
     
-    <div v-else-if="stationDepartures.length === 0" class="py-4 text-center text-gray-500">
+    <div v-else-if="stationDepartures.length === 0" class="py-4 text-center text-gray-500 dark:text-dark-secondary">
       No departures in the next 30 minutes
     </div>
     
     <div v-else class="space-y-2">
       <div v-for="departure in stationDepartures" :key="departure.tripId" 
-           class="departure-item flex items-center p-2 bg-white rounded-lg shadow-sm">
+           class="departure-item flex items-center p-2 rounded-lg shadow-sm bg-white dark:bg-dark-card dark:hover:bg-dark-hover transition-colors">
         <div :class="['transit-line px-2 py-1 rounded text-white font-medium flex items-center gap-2', 
                       getTransitColor(getTransitType(departure.line.product))]">
           <TransitIcon 
@@ -214,7 +214,7 @@ onUnmounted(() => {
         
         <div class="flex-1 mx-4">
           <div class="font-medium truncate">{{ departure.direction }}</div>
-          <div class="text-sm text-gray-500">
+          <div class="text-sm text-gray-500 dark:text-dark-secondary">
             {{ departure.platform ? `Platform ${departure.platform}` : '' }}
           </div>
         </div>

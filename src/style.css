@@ -16,6 +16,18 @@
   #app {
     @apply h-full w-full;
   }
+
+  .dark {
+    @apply bg-dark text-dark;
+  }
+
+  .dark ::-webkit-scrollbar {
+    @apply bg-dark-card;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-dark-hover rounded;
+  }
 }
 
 /* Leaflet specific styles */

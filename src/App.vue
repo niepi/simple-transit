@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
-import { ArrowPathIcon } from '@heroicons/vue/24/solid'
+import { ArrowPathIcon, SunIcon, MoonIcon } from '@heroicons/vue/24/solid'
 import BottomNav from './components/BottomNav.vue'
-import { useGeolocation } from '@vueuse/core'
+import { useGeolocation, usePreferredDark, useStorage } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
 import { useFavoritesStore } from './stores/favorites'
 import StationPanel from './components/StationPanel.vue'
@@ -39,6 +39,25 @@ const map = ref<any>(null)
 const markers = ref<any[]>([])
 const centerMarker = ref<any>(null)
 const allowAutoCenter = ref(true)
+
+// Dark mode handling
+const isDark = useStorage('simple-transit-dark-mode', usePreferredDark().value)
+
+// Watch dark mode changes
+watch(isDark, (dark) => {
+  if (dark) {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+})
+
+// Initialize dark mode
+onMounted(() => {
+  if (isDark.value) {
+    document.documentElement.classList.add('dark')
+  }
+})
 
 function clearMarkers() {
   markers.value.forEach(marker => marker.remove())
@@ -278,7 +297,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-screen w-full flex md:flex-row flex-col">
+  <div class="h-screen w-full flex md:flex-row flex-col dark:bg-dark transition-colors">
+    <!-- Dark mode toggle -->
+    <button
+      @click="isDark = !isDark"
+      class="absolute top-4 right-4 z-[1000] p-2 rounded-full bg-white dark:bg-dark-card shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover"
+      :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      <component
+        :is="isDark ? SunIcon : MoonIcon"
+        class="w-5 h-5 text-gray-600 dark:text-dark"
+      />
+    </button>
     <!-- Map Section -->
     <div class="w-full md:w-2/3 h-[40vh] md:h-screen relative">
 
