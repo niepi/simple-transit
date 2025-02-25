@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body {
+    @apply h-full w-full m-0 p-0;
+  }
+
+  #app {
+    @apply h-full w-full;
+  }
+}
+
+/* Leaflet specific styles */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1;
+}
+
+.leaflet-div-icon {
+  background: transparent;
+  border: none;
+}
+
+@layer components {
+  .transit-line {
+    @apply px-2 py-1 rounded text-white font-semibold text-sm;
+  }
+
+  .transit-line-sbahn {
+    @apply bg-sbahn;
+  }
+
+  .transit-line-ubahn {
+    @apply bg-ubahn;
+  }
+
+  .transit-line-tram {
+    @apply bg-tram;
+  }
+
+  .transit-line-bus {
+    @apply bg-bus;
+  }
+
+  .transit-line-ferry {
+    @apply bg-ferry;
+  }
+
+  .transit-line-express {
+    @apply bg-express;
+  }
+
+  .transit-line-regional {
+    @apply bg-regional;
+  }
+
+  .station-panel {
+    @apply bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4;
+  }
+
+  .departure-item {
+    @apply flex items-center gap-4 py-2 border-b last:border-b-0;
+  }
+
+  .delay-badge {
+    @apply px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .delay-on-time {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .delay-delayed {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .delay-cancelled {
+    @apply bg-red-100 text-red-800;
+  }
+}
