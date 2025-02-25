@@ -324,45 +324,46 @@ onUnmounted(() => {
       <!-- Main Content -->
       <div class="flex-1 overflow-y-auto p-4">
         <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
-        <button 
-          v-if="coords.latitude && coords.longitude"
-          @click="store.fetchNearbyStations(coords.latitude, coords.longitude)"
-          :disabled="store.loading"
-          class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg transition-colors disabled:opacity-50"
-          title="Refresh stations"
-        >
-          <div :class="{'animate-spin': store.loading}" class="i-heroicons-arrow-path-20-solid w-5 h-5"></div>
-        </button>
-      </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
+          <button 
+            v-if="coords.latitude && coords.longitude"
+            @click="store.fetchNearbyStations(coords.latitude, coords.longitude)"
+            :disabled="store.loading"
+            class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh stations"
+          >
+            <div :class="{'animate-spin': store.loading}" class="i-heroicons-arrow-path-20-solid w-5 h-5"></div>
+          </button>
+        </div>
       
-      <!-- Station List -->
-      <div class="space-y-4">
-        <div v-if="!coords.latitude || !coords.longitude" class="text-center py-8 text-gray-500">
-          Waiting for location access...
-        </div>
-        
-        <div v-else-if="store.loading" class="text-center py-8 text-gray-500">
-          Loading nearby stations...
-        </div>
-        
-        <div v-else-if="store.error" class="text-center py-8 text-red-500">
-          {{ store.error }}
-        </div>
-        
-        <template v-else-if="store.sortedStations.length > 0">
-          <StationPanel
-            v-for="station in filteredStations"
-            :key="station.id"
-            :station="station"
-          />
-        </template>
-        
-        <div v-else-if="favoritesStore.activeView === 'favorites' && filteredStations.length === 0" class="text-center py-8 text-gray-500">
-          No favorite stations yet
-        </div>
-        <div v-else class="text-center py-8 text-gray-500">
-          No stations found nearby
+        <!-- Station List -->
+        <div class="space-y-4">
+          <div v-if="!coords.latitude || !coords.longitude" class="text-center py-8 text-gray-500">
+            Waiting for location access...
+          </div>
+          
+          <div v-else-if="store.loading" class="text-center py-8 text-gray-500">
+            Loading nearby stations...
+          </div>
+          
+          <div v-else-if="store.error" class="text-center py-8 text-red-500">
+            {{ store.error }}
+          </div>
+          
+          <template v-else-if="store.sortedStations.length > 0">
+            <StationPanel
+              v-for="station in filteredStations"
+              :key="station.id"
+              :station="station"
+            />
+          </template>
+          
+          <div v-else-if="favoritesStore.activeView === 'favorites' && filteredStations.length === 0" class="text-center py-8 text-gray-500">
+            No favorite stations yet
+          </div>
+          <div v-else class="text-center py-8 text-gray-500">
+            No stations found nearby
+          </div>
         </div>
       </div>
 
