@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
 import { useFavoritesStore } from './stores/favorites'
