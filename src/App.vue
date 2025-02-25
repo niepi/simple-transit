@@ -323,7 +323,7 @@ onUnmounted(() => {
     <div class="w-full md:w-1/3 h-[67vh] md:h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700">
       <!-- Main Content -->
       <div class="flex-1 overflow-y-auto p-4">
-      <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
         <button 
           v-if="coords.latitude && coords.longitude"
