@@ -2,10 +2,15 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
+import Icons from 'unplugin-icons/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    Icons({
+      compiler: 'vue3',
+      autoInstall: true
+    }),
     vue({
       template: {
         compilerOptions: {
