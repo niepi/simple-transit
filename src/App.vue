@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
-import { ArrowPathIcon, StarIcon } from '@heroicons/vue/24/solid'
+import { ArrowPathIcon } from '@heroicons/vue/24/solid'
+import BottomNav from './components/BottomNav.vue'
 import { useGeolocation } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
 import { useFavoritesStore } from './stores/favorites'
@@ -286,7 +287,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-screen w-full flex md:flex-row flex-col overflow-hidden">
+  <div class="h-screen w-full flex md:flex-row flex-col overflow-hidden relative">
+    <BottomNav />
     <!-- Map Section -->
     <div class="w-full md:w-2/3 h-[33vh] md:h-screen relative">
       <!-- Map Container -->
@@ -326,9 +328,9 @@ onUnmounted(() => {
       </div>
     </div>
     <!-- Stations Panel -->
-    <div class="w-full md:w-1/3 h-[67vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 flex flex-col">
+    <div class="w-full md:w-1/3 h-[67vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700">
       <!-- Main Content -->
-      <div class="flex-1 overflow-y-auto p-4">
+      <div class="h-full overflow-y-auto p-4 pb-24">
         <div class="flex justify-between items-center mb-4">
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
           <button 
@@ -374,12 +376,13 @@ onUnmounted(() => {
       </div>
 
       <!-- Bottom Navigation -->
-      <div class="mt-auto flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div class="inline-flex rounded-lg overflow-hidden">
-          <button
+      <div class="mt-auto flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+        <div class="w-full max-w-sm mx-auto">
+          <div class="flex rounded-lg overflow-hidden shadow-sm w-full">
+            <button
             @click="favoritesStore.setActiveView('all')"
             :class="[
-              'px-4 py-2 text-sm font-medium transition-colors',
+              'flex-1 px-4 py-3 text-sm font-medium transition-colors',
               favoritesStore.activeView === 'all'
                 ? 'bg-gray-900 text-white dark:bg-gray-700'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -390,7 +393,7 @@ onUnmounted(() => {
           <button
             @click="favoritesStore.setActiveView('favorites')"
             :class="[
-              'px-4 py-2 text-sm font-medium transition-colors',
+              'flex-1 px-4 py-3 text-sm font-medium transition-colors',
               favoritesStore.activeView === 'favorites'
                 ? 'bg-gray-900 text-white dark:bg-gray-700'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
