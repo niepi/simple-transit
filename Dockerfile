@@ -4,11 +4,12 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies and build
-ENV NODE_ENV=production
 COPY package.json .
 RUN npm install -g npm@latest && \
-    npm install && \
+    NODE_ENV=development npm install && \
     npm cache clean --force
+
+ENV NODE_ENV=production
 
 # Build application
 COPY . .
