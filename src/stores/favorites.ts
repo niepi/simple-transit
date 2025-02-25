@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import type { Station } from '../types'
 import { useLocalStorage } from '@vueuse/core'
 import { usePreferencesStore } from './preferences'
 
