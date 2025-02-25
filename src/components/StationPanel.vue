@@ -173,35 +173,20 @@ onUnmounted(() => {
 
 <template>
   <div class="station-panel">
-    <!-- Favorites toggle and filters -->
+    <!-- Station header and filters -->
     <div class="flex flex-col gap-4 mb-4">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <button
-            class="opacity-60 hover:opacity-100 transition-opacity"
-            @click="favoritesStore.toggleFavorite(station.id)"
-            :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
-          >
-            <component
-              :is="favoritesStore.isFavorite(station.id) ? StarIcon : StarIconOutline"
-              class="w-6 h-6 text-yellow-500"
-            />
-          </button>
-          <h2 class="text-xl font-semibold">{{ station.name }}</h2>
-        </div>
-        
+      <div class="flex items-center gap-2">
         <button
-          @click="favoritesStore.setActiveView(favoritesStore.activeView === 'all' ? 'favorites' : 'all')"
-          class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dark-card rounded-full shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover"
+          class="opacity-60 hover:opacity-100 transition-opacity"
+          @click="favoritesStore.toggleFavorite(station.id)"
+          :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
         >
           <component
-            :is="favoritesStore.activeView === 'favorites' ? StarIcon : StarIconOutline"
-            class="w-5 h-5 text-amber-500"
+            :is="favoritesStore.isFavorite(station.id) ? StarIcon : StarIconOutline"
+            class="w-6 h-6 text-yellow-500"
           />
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ favoritesStore.activeView === 'favorites' ? 'Show All' : 'Show Favorites' }}
-          </span>
         </button>
+        <h2 class="text-xl font-semibold">{{ station.name }}</h2>
       </div>
       
       <!-- Transit type filter (only shown in favorites view) -->
