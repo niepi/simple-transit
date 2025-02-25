@@ -167,7 +167,7 @@ onUnmounted(() => {
           <div 
             :class="[
               'w-6 h-6 text-yellow-500',
-              favoritesStore.isFavorite(station.id) ? 'i-heroicons-star-20-solid' : 'i-heroicons-star-20-outline'
+              favoritesStore.isFavorite(station.id) ? 'i-heroicons:star-solid' : 'i-heroicons:star'
             ]"
           />
         </button>
@@ -184,7 +184,7 @@ onUnmounted(() => {
               :type="getTimeTagType(station.distance)"
               class="flex items-center gap-1"
             >
-              <div class="i-heroicons-clock-20-solid w-4 h-4"></div>
+              <div class="i-heroicons:clock-solid w-4 h-4"></div>
               {{ formatTimeAndDistance(station.distance).time }}
             </el-tag>
           </el-tooltip>

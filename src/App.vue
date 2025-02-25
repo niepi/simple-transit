@@ -332,7 +332,7 @@ onUnmounted(() => {
             class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg transition-colors disabled:opacity-50"
             title="Refresh stations"
           >
-            <div :class="{'animate-spin': store.loading}" class="i-heroicons-arrow-path-20-solid w-5 h-5"></div>
+            <div :class="{'animate-spin': store.loading}" class="i-heroicons:arrow-path-solid w-5 h-5"></div>
           </button>
         </div>
       
@@ -391,7 +391,7 @@ onUnmounted(() => {
             ]"
           >
             <div class="flex items-center gap-1">
-              <div class="i-heroicons-star-20-solid w-5 h-5" />
+              <div class="i-heroicons:star-solid w-5 h-5" />
               Favorites
             </div>
           </button>
