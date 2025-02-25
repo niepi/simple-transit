@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useGeolocation } from '@vueuse/core'
-import type { Station, Trip, UserLocation, VBBLocation, VBBDeparture } from '../types'
+import type { Station, Trip, UserLocation, VBBLocation, VBBDeparture, TransitProduct } from '../types'
+import type { TransitType } from '../types/preferences'
 import { usePreferencesStore } from './preferences'
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -35,6 +36,10 @@ interface StoreState {
 }
 
 export const useStationsStore = defineStore('stations', () => {
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const stations = ref<Station[]>([])
+
   const state = ref<StoreState>({
     stations: [],
     departures: {},
@@ -243,7 +248,7 @@ export const useStationsStore = defineStore('stations', () => {
             tripId: departure.tripId || `${plannedTime.toISOString()}-${departure.line.name}`,
             line: {
               name: departure.line.name,
-              product: (departure.line.product || departure.line.mode || 'bus').toLowerCase()
+              product: normalizeTransitType(departure.line.product || departure.line.mode || 'bus') as unknown as TransitProduct
             },
             direction: departure.direction,
             when: actualTime.toISOString(),
@@ -286,7 +291,8 @@ export const useStationsStore = defineStore('stations', () => {
       departuresCache: {},
       isLoading: false,
       error: null,
-      userLocation: null
+      userLocation: null,
+      mapCenter: null
     }
   }
 
@@ -310,10 +316,12 @@ export const useStationsStore = defineStore('stations', () => {
 
   function normalizeStation(station: VBBLocation): Station {
     return {
-      ...station,
+      id: station.id,
       name: station.name.replace(' (Berlin)', '').trim(),
+      latitude: station.location.latitude,
+      longitude: station.location.longitude,
       distance: undefined,
-      products: station.products
+      products: station.products || []
     }
   }
 

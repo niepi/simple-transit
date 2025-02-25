@@ -11,14 +11,16 @@ export interface Station {
   latitude: number
   longitude: number
   distance?: number
-  products?: string[]
+  products: string[]
 }
+
+export type TransitProduct = 'suburban' | 'subway' | 'tram' | 'bus' | 'ferry'
 
 export interface Trip {
   tripId: string
   line: {
     name: string
-    product: string
+    product: TransitProduct
   }
   direction: string
   platform?: string
