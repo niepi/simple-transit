@@ -4,13 +4,14 @@ import { useStationsStore } from '../stores/stations'
 import type { Station, TransitType } from '../types'
 import type { TagProps } from 'element-plus'
 import TransitIcon from './TransitIcon.vue'
-import { ElTag, ElTooltip } from 'element-plus'
+import { ElTag, ElTooltip, ElButton } from 'element-plus'
 
 const props = defineProps<{
   station: Station
 }>()
 
 const store = useStationsStore()
+const favoritesStore = useFavoritesStore()
 const loading = ref(false)
 const refreshInterval = ref<number | null>(null)
 
@@ -155,8 +156,20 @@ onUnmounted(() => {
 
 <template>
   <div class="station-panel">
-    <div class="flex justify-between items-start mb-4">
-      <div class="flex-1">
+    <div class="flex justify-between items-start mb-4 group">
+      <div class="flex items-center gap-2 flex-1">
+        <button
+          class="opacity-60 group-hover:opacity-100 transition-opacity"
+          @click="favoritesStore.toggleFavorite(station.id)"
+          :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
+        >
+          <div 
+            :class="[
+              'w-6 h-6 text-yellow-500',
+              favoritesStore.isFavorite(station.id) ? 'i-heroicons-star-20-solid' : 'i-heroicons-star-20-outline'
+            ]"
+          />
+        </button>
         <div class="flex items-center gap-2">
           <h2 class="text-xl font-semibold">{{ station.name }}</h2>
           <el-tooltip

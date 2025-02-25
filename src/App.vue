@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
+import { useFavoritesStore } from './stores/favorites'
 import StationPanel from './components/StationPanel.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -29,6 +30,7 @@ function handleReload(): void {
   }
 }
 const store = useStationsStore()
+const favoritesStore = useFavoritesStore()
 const mapRef = ref<HTMLElement | null>(null)
 const map = ref<any>(null)
 const markers = ref<any[]>([])
@@ -207,6 +209,14 @@ function initMap() {
 // Wait for container to be ready
 const isMapReady = ref(false)
 
+// Computed property for filtered stations
+const filteredStations = computed(() => {
+  if (favoritesStore.activeView === 'favorites') {
+    return store.sortedStations.filter(station => favoritesStore.isFavorite(station.id))
+  }
+  return store.sortedStations
+})
+
 // Watch for map initialization
 const isInitialized = ref(false)
 const allowAutoCenter = ref(true)
@@ -310,7 +320,9 @@ onUnmounted(() => {
       </div>
     </div>
     <!-- Stations Panel -->
-    <div class="w-full md:w-1/3 h-[67vh] md:h-screen overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700">
+    <div class="w-full md:w-1/3 h-[67vh] md:h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700">
+      <!-- Main Content -->
+      <div class="flex-1 overflow-y-auto p-4">
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
         <button 
@@ -340,14 +352,48 @@ onUnmounted(() => {
         
         <template v-else-if="store.sortedStations.length > 0">
           <StationPanel
-            v-for="station in store.sortedStations"
+            v-for="station in filteredStations"
             :key="station.id"
             :station="station"
           />
         </template>
         
+        <div v-else-if="favoritesStore.activeView === 'favorites' && filteredStations.length === 0" class="text-center py-8 text-gray-500">
+          No favorite stations yet
+        </div>
         <div v-else class="text-center py-8 text-gray-500">
           No stations found nearby
+        </div>
+      </div>
+
+      <!-- Bottom Navigation -->
+      <div class="flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div class="inline-flex rounded-lg overflow-hidden">
+          <button
+            @click="favoritesStore.activeView = 'all'"
+            :class="[
+              'px-4 py-2 text-sm font-medium transition-colors',
+              favoritesStore.activeView === 'all'
+                ? 'bg-gray-900 text-white dark:bg-gray-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
+            ]"
+          >
+            All Stations
+          </button>
+          <button
+            @click="favoritesStore.activeView = 'favorites'"
+            :class="[
+              'px-4 py-2 text-sm font-medium transition-colors',
+              favoritesStore.activeView === 'favorites'
+                ? 'bg-gray-900 text-white dark:bg-gray-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'
+            ]"
+          >
+            <div class="flex items-center gap-1">
+              <div class="i-heroicons-star-20-solid w-5 h-5" />
+              Favorites
+            </div>
+          </button>
         </div>
       </div>
     </div>
