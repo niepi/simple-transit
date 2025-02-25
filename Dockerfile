@@ -3,9 +3,10 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
-# Install all dependencies including dev dependencies for build
+# Update npm and install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install -g npm@latest && \
+    npm ci
 
 # Copy source
 COPY . .
