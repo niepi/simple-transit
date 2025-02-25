@@ -74,7 +74,7 @@ function updateMarkers() {
     marker.bindPopup(`
       <div class="p-2">
         <div class="font-bold mb-1">${station.name}</div>
-        <div class="text-sm text-gray-600">${Math.round(station.distance)} meters away</div>
+        <div class="text-sm text-gray-600">${Math.round(station.distance ?? 0)} meters away</div>
       </div>
     `, {
       offset: [0, -12]  // Adjust popup offset
