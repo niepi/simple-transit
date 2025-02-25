@@ -271,8 +271,14 @@ export const useStationsStore = defineStore('stations', () => {
           !existingDepartures.some(existing => existing.tripId === dep.tripId)
         )
         state.value.departures[stationId] = [...existingDepartures, ...newDepartures]
+          .sort((a, b) => {
+            const aTime = new Date(a.plannedWhen || '').getTime()
+            const bTime = new Date(b.plannedWhen || '').getTime()
+            return aTime - bTime
+          })
+          .slice(0, MAX_DEPARTURES.value * (loadMore ? 2 : 1))
       } else {
-        state.value.departures[stationId] = mappedDepartures
+        state.value.departures[stationId] = mappedDepartures.slice(0, MAX_DEPARTURES.value)
       }
       
       state.value.departuresCache[stationId] = {
