@@ -23,13 +23,12 @@ FROM nginx:alpine
 
 # Copy built files and config
 COPY --from=builder /app/dist /usr/share/nginx/html/
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-custom.conf /etc/nginx/nginx.conf
 
-# Configure nginx
-RUN rm -rf /var/cache/nginx/* && \
-    mkdir -p /var/cache/nginx && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chmod -R 755 /var/cache/nginx
+# Configure nginx and permissions
+RUN mkdir -p /tmp && \
+    chown -R nginx:nginx /tmp /var/cache/nginx /usr/share/nginx/html && \
+    chmod -R 755 /tmp /var/cache/nginx /usr/share/nginx/html
 
 EXPOSE 80
 
