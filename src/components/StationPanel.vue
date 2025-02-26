@@ -28,7 +28,7 @@ const preferencesStore = usePreferencesStore()
 const stationDepartures = computed(() => {
   const deps = store.departures[props.station.id] || []
   const enabledTypes = preferencesStore.preferences.enabledTransitTypes
-  const maxDeps = preferencesStore.preferences.maxDepartures * (loadingMore.value ? 2 : 1)
+  const maxDeps = preferencesStore.preferences.maxDepartures * (hasLoadedMore.value ? 2 : 1)
 
   console.log('Computing departures:', {
     total: deps.length,
@@ -137,9 +137,13 @@ let fetchTimeout: number | null = null
 
 // Handle load more click
 async function handleLoadMore() {
-  console.log('Load more clicked');
-  console.log('Current departures:', stationDepartures.value.length);
-  console.log('Loading more:', loadingMore.value);
+  console.log('Load more clicked', {
+    currentDepartures: stationDepartures.value.length,
+    loadingMore: loadingMore.value,
+    hasLoadedMore: hasLoadedMore.value
+  });
+  
+  hasLoadedMore.value = true;
   await fetchDepartures(true);
 }
 
@@ -180,7 +184,12 @@ const REFRESH_INTERVAL = 60000 // 1 minute
 
 function startRefreshInterval() {
   stopRefreshInterval() // Ensure no duplicate intervals
-  refreshInterval.value = window.setInterval(fetchDepartures, REFRESH_INTERVAL)
+  refreshInterval.value = window.setInterval(() => {
+    // Don't auto-refresh while loading more
+    if (!loadingMore.value && !hasLoadedMore.value) {
+      fetchDepartures(false)
+    }
+  }, REFRESH_INTERVAL)
 }
 
 function stopRefreshInterval() {
@@ -190,9 +199,18 @@ function stopRefreshInterval() {
   }
 }
 
+// Keep track of load more state between refreshes
+const hasLoadedMore = ref(false)
+
 onMounted(() => {
   fetchDepartures()
   startRefreshInterval()
+})
+
+// Watch for changes in station to reset load more state
+watch(() => props.station?.id, () => {
+  hasLoadedMore.value = false
+  loadingMore.value = false
 })
 
 watch(() => props.station, (newStation) => {
