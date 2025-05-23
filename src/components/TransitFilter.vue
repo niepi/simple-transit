@@ -13,8 +13,8 @@ const selectedTypes = computed({
 })
 
 interface TransitOption {
-  label: string
-  value: TransitType
+  label: string // Visual label e.g., "S-Bahn"
+  value: TransitType // Actual value e.g., "sbahn"
 }
 
 const transitOptions: TransitOption[] = [
@@ -33,11 +33,11 @@ const transitOptions: TransitOption[] = [
       v-model="selectedTypes" 
       class="flex flex-wrap gap-2"
     >
+      <!-- Corrected: :label="option.value" is the value for the group's model -->
       <el-checkbox 
         v-for="option in transitOptions" 
         :key="option.value"
-        :value="option.value"
-        :label="option.label"
+        :label="option.value" 
         class="!mr-0"
       >
         <div class="flex items-center gap-2">
@@ -45,7 +45,7 @@ const transitOptions: TransitOption[] = [
             :type="option.value" 
             class="w-4 h-4"
           />
-          <span class="text-sm">{{ option.label }}</span>
+          <span class="text-sm">{{ option.label }}</span> <!-- This is the visual label text -->
         </div>
       </el-checkbox>
     </el-checkbox-group>
