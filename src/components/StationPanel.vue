@@ -5,11 +5,11 @@ import { useFavoritesStore } from '../stores/favorites'
 import { usePreferencesStore } from '../stores/preferences'
 import type { Station, TransitType } from '../types'
 // import type { TagProps } from 'element-plus' // Keep commented for now
-import TransitIcon from './TransitIcon.vue' // Restore
-// import TransitFilter from './TransitFilter.vue' // Keep commented
-// import { ElTag, ElTooltip } from 'element-plus' // Keep commented
-// import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline' // Keep commented
-// import { StarIcon, ClockIcon } from '@heroicons/vue/24/solid' // Keep commented
+import TransitIcon from './TransitIcon.vue'
+import TransitFilter from './TransitFilter.vue'
+import { ElTag, ElTooltip } from 'element-plus'
+import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline'
+import { StarIcon, ClockIcon } from '@heroicons/vue/24/solid'
 
 const props = defineProps<{
   station: Station
@@ -50,7 +50,17 @@ const stationDepartures = computed(() => { // Restore full logic
   return filtered
 })
 
-const transitTypeMap = { /* ... */ } as const // Restore (copied from original for brevity)
+const transitTypeMap = {
+  suburban: 'sbahn',
+  s: 'sbahn',
+  subway: 'ubahn',
+  u: 'ubahn',
+  tram: 'tram',
+  bus: 'bus',
+  ferry: 'ferry',
+  express: 'express',
+  regional: 'regional'
+} as const
 function getTransitType(product: string): TransitType { // Restore
   const type = product?.toLowerCase()?.trim() || ''
   return transitTypeMap[type as keyof typeof transitTypeMap] || 'bus' // Default to bus if not found in map
@@ -87,41 +97,53 @@ async function fetchDepartures(loadMore = false) { // Restore
 }
 
 const REFRESH_INTERVAL = 60000 // Restore
-function startRefreshInterval() { /* ... */ } // Restore (copied for brevity)
-function stopRefreshInterval() { /* ... */ } // Restore (copied for brevity)
+function startRefreshInterval() {
+  stopRefreshInterval()
+  refreshInterval.value = window.setInterval(() => {
+    fetchDepartures()
+  }, REFRESH_INTERVAL)
+}
+
+function stopRefreshInterval() {
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value)
+    refreshInterval.value = null
+  }
+}
 
 onMounted(() => { // Restore
   fetchDepartures()
-  // startRefreshInterval() // Keep interval commented for now to simplify testing
+  startRefreshInterval()
 })
 
 watch(() => props.station?.id, () => { // Restore
   hasLoadedMore.value = false
   loadingMore.value = false
   fetchDepartures()
+  startRefreshInterval()
 })
 
 onUnmounted(() => { // Restore
-  // stopRefreshInterval() // Keep interval commented
+  stopRefreshInterval()
 })
-
-// Placeholder for StarIcon components to avoid template errors if they were used
-const StarIcon = 'span';
-const StarIconOutline = 'span';
 
 </script>
 
 <template>
   <div class="station-panel">
-    <!-- Station header - simplified, no favorite toggle yet -->
     <div class="flex flex-col gap-4 mb-4">
       <div class="flex items-center gap-2">
-        <!-- Favorite button placeholder -->
-        <!-- <button @click="favoritesStore.toggleFavorite(station.id)">Fav Placeholder</button> -->
+        <button
+          :title="favoritesStore.isFavorite(station.id) ? 'Remove from favorites' : 'Add to favorites'"
+          @click="favoritesStore.toggleFavorite(station.id)"
+          class="p-1"
+        >
+          <StarIconOutline v-if="!favoritesStore.isFavorite(station.id)" />
+          <StarIcon v-else />
+        </button>
         <h2 class="text-xl font-semibold">{{ station.name }}</h2>
       </div>
-      <!-- TransitFilter placeholder - keep commented -->
-      <!-- <transit-filter v-if="favoritesStore.activeView === 'favorites'" /> -->
+      <TransitFilter v-if="favoritesStore.activeView === 'favorites'" />
     </div>
     
     <div v-if="loading" class="py-4 text-center text-gray-500 dark:text-dark-secondary">

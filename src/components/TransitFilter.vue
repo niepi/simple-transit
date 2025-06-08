@@ -29,25 +29,25 @@ const transitOptions: TransitOption[] = [
 <template>
   <div class="flex flex-col gap-2 p-4 bg-white dark:bg-dark-card rounded-lg shadow-md">
     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Transit Types</h3>
-    <el-checkbox-group 
-      v-model="selectedTypes" 
+    <ElCheckboxGroup
+      v-model="selectedTypes"
       class="flex flex-wrap gap-2"
     >
       <!-- Corrected: :label="option.value" is the value for the group's model -->
-      <el-checkbox 
-        v-for="option in transitOptions" 
+      <ElCheckbox
+        v-for="option in transitOptions"
         :key="option.value"
-        :label="option.value" 
+        :label="option.value"
         class="!mr-0"
       >
         <div class="flex items-center gap-2">
-          <transit-icon 
-            :type="option.value" 
+          <TransitIcon
+            :type="option.value"
             class="w-4 h-4"
           />
-          <span class="text-sm">{{ option.label }}</span> <!-- This is the visual label text -->
+          <span class="text-sm">{{ option.label }}</span>
         </div>
-      </el-checkbox>
-    </el-checkbox-group>
+      </ElCheckbox>
+    </ElCheckboxGroup>
   </div>
 </template>
