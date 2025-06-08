@@ -38,9 +38,6 @@ interface StoreState {
 
 export const useStationsStore = defineStore('stations', () => {
   const favoritesStore = useFavoritesStore()
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-  const stations = ref<Station[]>([])
   const CACHE_DURATION = 30000 // 30 seconds
   const departureControllers = new Map<string, AbortController>()
 
@@ -139,11 +136,6 @@ export const useStationsStore = defineStore('stations', () => {
     }
     currentStationsController = new AbortController()
 
-    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-      loading.value = false
-      error.value = 'Invalid coordinates provided'
-      return
-    }
     
     try {
       const url = new URL('https://v6.vbb.transport.rest/locations/nearby')
@@ -172,7 +164,7 @@ export const useStationsStore = defineStore('stations', () => {
         .map(normalizeStation)
         .slice(0, MAX_STATIONS.value)
 
-      stations.value = validStations
+      state.value.stations = validStations
     } catch (e) {
       // Don't treat aborted requests as errors
       if (e instanceof Error && e.name === 'AbortError') {
@@ -180,8 +172,8 @@ export const useStationsStore = defineStore('stations', () => {
         return
       }
       console.error('Error fetching stations:', e)
-      error.value = e instanceof Error ? e.message : 'An error occurred fetching stations'
-      stations.value = []
+      state.value.error = e instanceof Error ? e.message : 'An error occurred fetching stations'
+      state.value.stations = []
     } finally {
       state.value.isLoading = false
     }
