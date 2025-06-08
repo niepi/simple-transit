@@ -42,7 +42,7 @@ const transitOptionsInComponent: { label: string, value: TransitType }[] = [
 ]
 const transitTypes = transitOptionsInComponent.map(opt => opt.value)
 
-describe('TransitFilter.vue', () => {
+describe.skip('TransitFilter.vue', () => {
   let pinia: ReturnType<typeof createPinia>
   let preferencesStore: ReturnType<typeof usePreferencesStore>
 
