@@ -10,28 +10,24 @@ vi.mock('./TransitIcon.vue', () => ({
   default: {
     name: 'TransitIcon',
     props: ['type', 'class'],
-    template: '<span :data-testid="type" :class="class">{{ type }} icon</span>',
+    template: '<span :data-testid="type" :class="class"></span>',
   },
 }))
 
 // Simpler Element Plus Mocks
-vi.mock('element-plus', async () => {
-  return {
-    ElCheckboxGroup: {
-      name: 'ElCheckboxGroup',
-      props: ['modelValue'],
-      emits: ['update:modelValue'], // Keep emits for testing interaction
-      template: '<div class="mock-el-checkbox-group" @click="$emit(\'update:modelValue\', [])"><slot /></div>', // Simplified interaction for test
-    },
-    ElCheckbox: {
-      name: 'ElCheckbox',
-      props: ['value', 'label'], // In El+, for a group, 'label' is the value, 'value' is for standalone.
-                                 // The component uses :value="option.value" and :label="option.label"
-                                 // Our mock will just capture these as passed.
-      template: '<div class="mock-el-checkbox" :data-value="value" :data-label="label"><slot /></div>',
-    },
-  }
-})
+vi.mock('element-plus', () => ({
+  ElCheckboxGroup: {
+    name: 'ElCheckboxGroup',
+    props: ['modelValue'],
+    emits: ['update:modelValue'],
+    template: '<div class="mock-el-checkbox-group"><slot /></div>',
+  },
+  ElCheckbox: {
+    name: 'ElCheckbox',
+    props: ['value', 'label'],
+    template: '<div class="mock-el-checkbox"><slot /></div>',
+  },
+}))
 
 const transitOptionsInComponent: { label: string, value: TransitType }[] = [
   { label: 'S-Bahn', value: 'sbahn' },

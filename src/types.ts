@@ -39,7 +39,6 @@ export interface VBBLocation extends Station {}
 
 export type TransitProduct = 'suburban' | 'subway' | 'tram' | 'bus' | 'ferry' | 'express' | 'regional'
 
-export type TransitType = 'sbahn' | 'ubahn' | 'tram' | 'bus' | 'ferry' | 'express' | 'regional'
 
 export interface TransitLineDetails {
   name: string
