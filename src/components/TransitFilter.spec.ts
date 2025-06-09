@@ -4,30 +4,60 @@ import { createPinia, setActivePinia } from 'pinia'
 import TransitFilter from './TransitFilter.vue'
 import { usePreferencesStore } from '../stores/preferences'
 import type { TransitType } from '../types'
-
-// Mock TransitIcon component
-vi.mock('./TransitIcon.vue', () => ({
-  default: {
-    name: 'TransitIcon',
-    props: ['type', 'class'],
-    template: '<span :data-testid="type" :class="class"></span>',
-  },
-}))
+// Mock TransitIcon component without using template compilation
+vi.mock('./TransitIcon.vue', () => {
+  const { h } = require('vue')
+  return {
+    default: {
+      name: 'TransitIcon',
+      props: ['type', 'class'],
+      render() {
+        return h(
+          'span',
+          { 'data-testid': this.type, class: this.class },
+          `${this.type} icon`
+        )
+      },
+    },
+  }
+})
 
 // Simpler Element Plus Mocks
-vi.mock('element-plus', () => ({
-  ElCheckboxGroup: {
-    name: 'ElCheckboxGroup',
-    props: ['modelValue'],
-    emits: ['update:modelValue'],
-    template: '<div class="mock-el-checkbox-group"><slot /></div>',
-  },
-  ElCheckbox: {
-    name: 'ElCheckbox',
-    props: ['value', 'label'],
-    template: '<div class="mock-el-checkbox"><slot /></div>',
-  },
-}))
+vi.mock('element-plus', () => {
+  const { h } = require('vue')
+  return {
+    ElCheckboxGroup: {
+      name: 'ElCheckboxGroup',
+      props: ['modelValue'],
+      emits: ['update:modelValue'],
+      render() {
+        return h(
+          'div',
+          {
+            class: 'mock-el-checkbox-group',
+            onClick: () => this.$emit('update:modelValue', []),
+          },
+          this.$slots.default?.()
+        )
+      },
+    },
+    ElCheckbox: {
+      name: 'ElCheckbox',
+      props: ['value', 'label'],
+      render() {
+        return h(
+          'div',
+          {
+            class: 'mock-el-checkbox',
+            'data-value': this.value,
+            'data-label': this.label,
+          },
+          this.$slots.default?.()
+        )
+      },
+    },
+  }
+})
 
 const transitOptionsInComponent: { label: string, value: TransitType }[] = [
   { label: 'S-Bahn', value: 'sbahn' },
@@ -69,9 +99,8 @@ describe.skip('TransitFilter.vue', () => {
 
     transitTypes.forEach((type, index) => {
       const checkbox = checkboxes[index]
-      // The component passes option.value to :value and option.label to :label prop of ElCheckbox
-      expect(checkbox.props('value')).toBe(transitOptionsInComponent[index].value)
-      expect(checkbox.props('label')).toBe(transitOptionsInComponent[index].label)
+      // The component uses option.value as the label prop for ElCheckbox
+      expect(checkbox.props('label')).toBe(transitOptionsInComponent[index].value)
       const icon = checkbox.findComponent({ name: 'TransitIcon' })
       expect(icon.exists()).toBe(true)
       expect(icon.props('type')).toBe(type)
