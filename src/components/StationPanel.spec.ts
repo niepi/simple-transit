@@ -18,4 +18,5 @@ describe('StationPanel.vue simple', () => {
     expect(wrapper.text()).toContain('Test');
     expect(store.fetchDepartures).toHaveBeenCalled();
   });
+
 });
