@@ -5,11 +5,10 @@ import { useFavoritesStore } from '../stores/favorites'
 import { usePreferencesStore } from '../stores/preferences'
 import type { Station, TransitType } from '../types'
 // import type { TagProps } from 'element-plus' // Keep commented for now
-import TransitIcon from './TransitIcon.vue' // Restore
-// import TransitFilter from './TransitFilter.vue' // Keep commented
-// import { ElTag, ElTooltip } from 'element-plus' // Keep commented
-// import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline' // Keep commented
-// import { StarIcon, ClockIcon } from '@heroicons/vue/24/solid' // Keep commented
+import TransitIcon from './TransitIcon.vue'
+import TransitFilter from './TransitFilter.vue'
+import { StarIcon as StarIconOutline } from '@heroicons/vue/24/outline'
+import { StarIcon } from '@heroicons/vue/24/solid'
 
 const props = defineProps<{
   station: Station
@@ -19,9 +18,10 @@ const store = useStationsStore()
 const favoritesStore = useFavoritesStore()
 const preferencesStore = usePreferencesStore()
 
-const loading = ref(false) // Restore
-const loadingMore = ref(false) // Restore
-const refreshInterval = ref<number | null>(null) // Restore
+const loading = ref(false)
+const loadingMore = ref(false)
+const refreshInterval = ref<number | null>(null)
+const isMounted = ref(false)
 
 const stationDepartures = computed(() => { // Restore full logic
   const deps = store.departures[props.station.id] || []
@@ -82,46 +82,73 @@ async function fetchDepartures(loadMore = false) { // Restore
   if (loadMore) { loadingMore.value = true; } else { loading.value = true; }
   try {
     await store.fetchDepartures(props.station.id, false, loadMore)
-  } catch (error) { console.error('Error fetching departures:', error); } 
-  finally { loading.value = false; loadingMore.value = false; }
+  } catch (error) {
+    console.error('Error fetching departures:', error)
+  } finally {
+    if (isMounted.value) {
+      loading.value = false
+      loadingMore.value = false
+    }
+  }
 }
 
-const REFRESH_INTERVAL = 60000 // Restore
-function startRefreshInterval() { /* ... */ } // Restore (copied for brevity)
-function stopRefreshInterval() { /* ... */ } // Restore (copied for brevity)
+const REFRESH_INTERVAL = 60000
 
-onMounted(() => { // Restore
+function startRefreshInterval() {
+  stopRefreshInterval()
+  refreshInterval.value = window.setInterval(() => {
+    fetchDepartures()
+  }, REFRESH_INTERVAL)
+}
+
+function stopRefreshInterval() {
+  if (refreshInterval.value !== null) {
+    clearInterval(refreshInterval.value)
+    refreshInterval.value = null
+  }
+}
+
+onMounted(() => {
+  isMounted.value = true
   fetchDepartures()
-  // startRefreshInterval() // Keep interval commented for now to simplify testing
+  startRefreshInterval()
 })
 
 watch(() => props.station?.id, () => { // Restore
   hasLoadedMore.value = false
   loadingMore.value = false
   fetchDepartures()
+  startRefreshInterval()
 })
 
-onUnmounted(() => { // Restore
-  // stopRefreshInterval() // Keep interval commented
+onUnmounted(() => {
+  isMounted.value = false
+  stopRefreshInterval()
 })
 
-// Placeholder for StarIcon components to avoid template errors if they were used
-const StarIcon = 'span';
-const StarIconOutline = 'span';
+const isFavorite = computed(() => favoritesStore.favoriteIds.includes(props.station.id))
+
+function toggleFavorite() {
+  favoritesStore.toggleFavorite(props.station.id)
+}
 
 </script>
 
 <template>
   <div class="station-panel">
-    <!-- Station header - simplified, no favorite toggle yet -->
     <div class="flex flex-col gap-4 mb-4">
       <div class="flex items-center gap-2">
-        <!-- Favorite button placeholder -->
-        <!-- <button @click="favoritesStore.toggleFavorite(station.id)">Fav Placeholder</button> -->
+        <button
+          @click="toggleFavorite"
+          title="favorite toggle"
+          class="text-gray-500 hover:text-yellow-500"
+        >
+          <StarIcon v-if="isFavorite" class="w-5 h-5" />
+          <StarIconOutline v-else class="w-5 h-5" />
+        </button>
         <h2 class="text-xl font-semibold">{{ station.name }}</h2>
       </div>
-      <!-- TransitFilter placeholder - keep commented -->
-      <!-- <transit-filter v-if="favoritesStore.activeView === 'favorites'" /> -->
+      <transit-filter v-if="favoritesStore.activeView === 'favorites'" />
     </div>
     
     <div v-if="loading" class="py-4 text-center text-gray-500 dark:text-dark-secondary">

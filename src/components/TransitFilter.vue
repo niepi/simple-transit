@@ -33,6 +33,7 @@ const transitOptions: TransitOption[] = [
       v-model="selectedTypes" 
       class="flex flex-wrap gap-2"
     >
+      <!-- Each option gets bound to value and label so tests can read props -->
       <el-checkbox
         v-for="option in transitOptions"
         :key="option.value"
