@@ -9,8 +9,9 @@ import type { TransitType } from '../types'
 vi.mock('./TransitIcon.vue', () => ({
   default: {
     name: 'TransitIcon',
-    props: ['type', 'class'],
-    template: '<span :data-testid="type" :class="class">{{ type }} icon</span>',
+    // use a prop name that is not a reserved keyword to avoid template compile errors
+    props: ['type', 'cls'],
+    template: '<span :data-testid="type" :class="cls">{{ type }} icon</span>',
   },
 }))
 
@@ -73,9 +74,8 @@ describe('TransitFilter.vue', () => {
 
     transitTypes.forEach((type, index) => {
       const checkbox = checkboxes[index]
-      // The component passes option.value to :value and option.label to :label prop of ElCheckbox
-      expect(checkbox.props('value')).toBe(transitOptionsInComponent[index].value)
-      expect(checkbox.props('label')).toBe(transitOptionsInComponent[index].label)
+      // The component passes option.value to the `label` prop
+      expect(checkbox.props('label')).toBe(transitOptionsInComponent[index].value)
       const icon = checkbox.findComponent({ name: 'TransitIcon' })
       expect(icon.exists()).toBe(true)
       expect(icon.props('type')).toBe(type)

@@ -277,7 +277,7 @@ export const useStationsStore = defineStore('stations', () => {
             direction: departure.direction,
             when: actualTime.toISOString(),
             plannedWhen: plannedTime.toISOString(),
-            delay: delayMinutes,
+            delay: departure.delay ?? delayMinutes,
             cancelled: Boolean(departure.cancelled),
             platform: departure.platform ? String(departure.platform) : ''
           }

@@ -14,8 +14,9 @@ global.fetch = vi.fn()
 vi.mock('./TransitIcon.vue', () => ({
   default: {
     name: 'TransitIcon',
-    props: ['type', 'class'],
-    template: '<span :data-testid="`transit-icon-${type}`" :class="class">ICON</span>',
+    // avoid using reserved keyword "class" as a binding variable
+    props: ['type', 'cls'],
+    template: '<span :data-testid="`transit-icon-${type}`" :class="cls">ICON</span>',
   },
 }))
 
@@ -328,15 +329,14 @@ describe('StationPanel.vue', () => {
       expect(loadMoreButton).toBeDefined()
 
       await loadMoreButton!.trigger('click')
+      // button should immediately show loading state
+      expect(loadMoreButton!.text()).toContain('Loading...')
+      expect(loadMoreButton!.attributes('disabled')).toBeDefined()
+
       await flushPromises()
 
       expect(stationsStore.fetchDepartures).toHaveBeenCalledWith(mockStation.id, false, true)
-      // Check button text/disabled state (reflecting component's loadingMore ref)
-      expect(loadMoreButton!.text()).toContain('Loading...') 
-      expect(loadMoreButton!.attributes('disabled')).toBeDefined()
-
-      await flushPromises() // after fetchDepartures resolves
-      expect(loadMoreButton!.text()).toContain('Load More Departures') 
+      expect(loadMoreButton!.text()).toContain('Load More Departures')
       expect(loadMoreButton!.attributes('disabled')).toBeUndefined()
       
       // Verify new departure is displayed
