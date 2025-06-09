@@ -33,11 +33,11 @@ const transitOptions: TransitOption[] = [
       v-model="selectedTypes" 
       class="flex flex-wrap gap-2"
     >
-      <!-- Corrected: :label="option.value" is the value for the group's model -->
-      <el-checkbox 
-        v-for="option in transitOptions" 
+      <el-checkbox
+        v-for="option in transitOptions"
         :key="option.value"
-        :label="option.value" 
+        :value="option.value"
+        :label="option.label"
         class="!mr-0"
       >
         <div class="flex items-center gap-2">
