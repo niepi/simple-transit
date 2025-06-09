@@ -170,7 +170,7 @@ describe('Stations Store', () => {
       await defaultStore.fetchNearbyStations(52.52, 13.38)
       expect(defaultStore.stations).toEqual([])
       expect(defaultStore.isLoading).toBe(false)
-      expect(defaultStore.error).toBeNull() 
+      expect(defaultStore.error).toBe('Failed to fetch stations: Internal Server Error (500)')
     })
 
     it('sets error state on invalid coordinates', async () => {
