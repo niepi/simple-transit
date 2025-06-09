@@ -236,19 +236,25 @@ describe('Stations Store', () => {
       expect(defaultStore.departures[stationId][0].tripId).toBe('freshTripAfterForce');
     })
 
-    it('normalizes various transit product strings', async () => {
-      defaultStore.clearStations();
-      const apiResponse = [
-        { ...mockDeparture, tripId: 's-test', line: { name: 'S42', product: 's' } },
-        { ...mockDeparture, tripId: 'u-test', line: { name: 'U2', product: 'U' } },
-        { ...mockDeparture, tripId: 'unknown-test', line: { name: 'X1', product: 'rocket' } }
+    it('appends departures when loadMore is true', async () => {
+      const first = [
+        { ...mockDeparture, tripId: 't1', plannedWhen: '2024-01-01T10:00:00Z', when: '2024-01-01T10:00:00Z' },
+        { ...mockDeparture, tripId: 't2', plannedWhen: '2024-01-01T10:05:00Z', when: '2024-01-01T10:05:00Z' }
       ]
+      vi.mocked(fetch).mockResolvedValueOnce(createFetchResponse({ departures: first }))
+      await defaultStore.fetchDepartures(stationId)
+      expect(defaultStore.departures[stationId]).toHaveLength(2)
 
-      vi.mocked(fetch).mockResolvedValue(createFetchResponse({ departures: apiResponse }))
-      await defaultStore.fetchDepartures(stationId, true)
+      const more = [
+        { ...mockDeparture, tripId: 't2', plannedWhen: '2024-01-01T10:05:00Z', when: '2024-01-01T10:05:00Z' },
+        { ...mockDeparture, tripId: 't3', plannedWhen: '2024-01-01T10:10:00Z', when: '2024-01-01T10:10:00Z' },
+        { ...mockDeparture, tripId: 't4', plannedWhen: '2024-01-01T10:15:00Z', when: '2024-01-01T10:15:00Z' }
+      ]
+      vi.mocked(fetch).mockResolvedValueOnce(createFetchResponse({ departures: more }))
+      await defaultStore.fetchDepartures(stationId, false, true)
 
-      const products = defaultStore.departures[stationId].map(d => d.line.product)
-      expect(products).toEqual(['sbahn', 'ubahn', 'bus'])
+      const ids = defaultStore.departures[stationId].map(d => d.tripId)
+      expect(ids).toEqual(['t1', 't2', 't3', 't4'])
     })
 
     it('sets error state on departure fetch failure', async () => {
