@@ -170,7 +170,7 @@ describe('Stations Store', () => {
       await defaultStore.fetchNearbyStations(52.52, 13.38)
       expect(defaultStore.stations).toEqual([])
       expect(defaultStore.isLoading).toBe(false)
-      expect(defaultStore.error).toBeNull() 
+      expect(defaultStore.error).toBe('Failed to fetch stations: Internal Server Error (500)')
     })
 
     it('sets error state on invalid coordinates', async () => {
@@ -220,7 +220,7 @@ describe('Stations Store', () => {
       expect(defaultStore.departures[stationId][0].tripId).toBe('cachedTrip')
     })
     
-    it('fetches new data if forced, even if cache is fresh', async () => { 
+    it('fetches new data if forced, even if cache is fresh', async () => {
       const cachedData = [{ ...mockDeparture, tripId: 'cachedTripForForceTest' }];
       const freshApiResponse = [{ ...mockDeparture, tripId: 'freshTripAfterForce', line: { name: 'S1', product: 'sbahn' as TransitProduct } }];
 
@@ -234,6 +234,21 @@ describe('Stations Store', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1); 
       expect(defaultStore.departures[stationId][0].tripId).toBe('freshTripAfterForce');
+    })
+
+    it('normalizes various transit product strings', async () => {
+      defaultStore.clearStations();
+      const apiResponse = [
+        { ...mockDeparture, tripId: 's-test', line: { name: 'S42', product: 's' } },
+        { ...mockDeparture, tripId: 'u-test', line: { name: 'U2', product: 'U' } },
+        { ...mockDeparture, tripId: 'unknown-test', line: { name: 'X1', product: 'rocket' } }
+      ]
+
+      vi.mocked(fetch).mockResolvedValue(createFetchResponse({ departures: apiResponse }))
+      await defaultStore.fetchDepartures(stationId, true)
+
+      const products = defaultStore.departures[stationId].map(d => d.line.product)
+      expect(products).toEqual(['sbahn', 'ubahn', 'bus'])
     })
 
     it('sets error state on departure fetch failure', async () => {
