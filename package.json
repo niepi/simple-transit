@@ -27,7 +27,7 @@
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.2",
     "@jridgewell/sourcemap-codec": "^1.4.15",
-    "@types/node": "^20.5.0",
+    "@types/node": "^24.0.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitest/coverage-v8": "^3.1.4",
     "@vue/test-utils": "^2.4.6",
