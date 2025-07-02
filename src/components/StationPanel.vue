@@ -181,7 +181,7 @@ function toggleFavorite() {
           </div>
         </div>
         
-        <div class="text-right">
+        <div class="text-right flex-shrink-0 w-16">
           <div class="font-medium">
             {{ departure.formattedTime }}
           </div>
