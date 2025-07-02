@@ -173,8 +173,9 @@ function toggleFavorite() {
           {{ departure.line.name }}
         </div>
         
-        <div class="flex-1 mx-4">
-          <div class="font-medium break-words whitespace-normal">{{ departure.direction }}</div>
+        <!-- Allow the direction text to shrink on small screens so the time stays visible -->
+        <div class="flex-1 mx-4 min-w-0">
+          <div class="font-medium truncate">{{ departure.direction }}</div>
           <div class="text-sm text-gray-500 dark:text-dark-secondary">
             {{ departure.platform ? `Platform ${departure.platform}` : '' }}
           </div>
