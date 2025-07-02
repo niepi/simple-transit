@@ -174,13 +174,13 @@ function toggleFavorite() {
         </div>
         
         <div class="flex-1 mx-4">
-          <div class="font-medium truncate">{{ departure.direction }}</div>
+          <div class="font-medium break-words whitespace-normal">{{ departure.direction }}</div>
           <div class="text-sm text-gray-500 dark:text-dark-secondary">
             {{ departure.platform ? `Platform ${departure.platform}` : '' }}
           </div>
         </div>
         
-        <div class="text-right">
+        <div class="text-right flex-shrink-0 w-16">
           <div class="font-medium">
             {{ departure.formattedTime }}
           </div>
