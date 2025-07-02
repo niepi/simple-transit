@@ -258,11 +258,20 @@ describe('Stations Store', () => {
     })
 
     it('sets error state on departure fetch failure', async () => {
-      defaultStore.clearStations(); 
+      defaultStore.clearStations();
       vi.mocked(fetch).mockResolvedValue(createFetchResponse({}, false, 500, 'Server Down'))
       await defaultStore.fetchDepartures(stationId)
       expect(defaultStore.departures[stationId]).toEqual([])
       expect(defaultStore.error).toBe('Failed to fetch departures: Server Down')
+    })
+
+    it('handles AbortError gracefully', async () => {
+      const abortError = new Error('abort')
+      abortError.name = 'AbortError'
+      vi.mocked(fetch).mockRejectedValueOnce(abortError)
+      await defaultStore.fetchDepartures(stationId)
+      expect(defaultStore.departures[stationId]).toBeUndefined()
+      expect(defaultStore.error).toBeNull()
     })
   })
 
