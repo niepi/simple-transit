@@ -11,76 +11,55 @@ import { DEFAULT_PREFERENCES } from '../types/preferences'
 // --- Global Mocks ---
 global.fetch = vi.fn()
 
-vi.mock('./TransitIcon.vue', () => {
-  const { h } = require('vue')
-  return {
-    default: {
-      name: 'TransitIcon',
-      props: ['type', 'class'],
-      render() {
-        return h('span', { 'data-testid': `transit-icon-${this.type}`, class: this.class }, 'ICON')
-      },
-    },
-  }
-})
+vi.mock('./TransitIcon.vue', () => ({
+  default: {
+    name: 'TransitIcon',
+    props: ['type', 'class'],
+    template: '<span data-testid="transit-icon" :class="class">ICON</span>',
+  },
+}))
 
-vi.mock('./TransitFilter.vue', () => {
-  const { h } = require('vue')
-  return {
-    default: {
-      name: 'TransitFilter',
-      render() {
-        return h('div', { 'data-testid': 'transit-filter' }, 'Mocked Transit Filter')
-      },
-    },
-  }
-})
+vi.mock('./TransitFilter.vue', () => ({
+  default: {
+    name: 'TransitFilter',
+    template: '<div data-testid="transit-filter">Mocked Transit Filter</div>',
+  },
+}))
 
 vi.mock('element-plus', async () => {
   const actual = await vi.importActual('element-plus')
-  const { h } = require('vue')
   return {
     ...actual,
     ElTag: {
       name: 'ElTag',
       props: ['type'],
-      render() {
-        return h('span', { class: 'mock-el-tag' }, this.$slots.default?.())
-      },
+      template: '<span class="mock-el-tag"><slot /></span>',
     },
     ElTooltip: {
       name: 'ElTooltip',
       props: ['content', 'placement'],
-      render() {
-        return h('div', null, this.$slots.default?.())
-      },
+      template: '<div><slot /></div>', 
     },
   }
 })
 
-vi.mock('@heroicons/vue/24/outline', () => {
-  const { h } = require('vue')
-  return {
-    StarIcon: {
-      name: 'StarIconOutline',
-      render() { return h('svg', { 'data-testid': 'star-icon-outline' }) },
-    },
-  }
-})
+vi.mock('@heroicons/vue/24/outline', () => ({
+  StarIcon: {
+    name: 'StarIconOutline',
+    template: '<svg data-testid="star-icon-outline"></svg>',
+  },
+}))
 
-vi.mock('@heroicons/vue/24/solid', () => {
-  const { h } = require('vue')
-  return {
-    StarIcon: {
-      name: 'StarIconSolid',
-      render() { return h('svg', { 'data-testid': 'star-icon-solid' }) },
-    },
-    ClockIcon: {
-      name: 'ClockIcon',
-      render() { return h('svg', { 'data-testid': 'clock-icon' }) },
-    }
+vi.mock('@heroicons/vue/24/solid', () => ({
+  StarIcon: {
+    name: 'StarIconSolid',
+    template: '<svg data-testid="star-icon-solid"></svg>',
+  },
+  ClockIcon: { 
+    name: 'ClockIcon',
+    template: '<svg data-testid="clock-icon"></svg>',
   }
-})
+}))
 
 // Mock timers
 beforeAll(() => {
@@ -216,7 +195,7 @@ describe.skip('StationPanel.vue', () => {
       expect(wrapper.findComponent({ name: 'StarIconOutline' }).exists()).toBe(false)
     })
 
-    it('calls favoritesStore.toggleFavorite when star button is clicked', async () => {
+    it.skip('calls favoritesStore.toggleFavorite when star button is clicked', async () => {
       const wrapper = mount(StationPanel, {
         props: { station: mockStation },
         global: { plugins: [pinia] },
@@ -276,7 +255,7 @@ describe.skip('StationPanel.vue', () => {
       expect(wrapper.text()).not.toContain('Loading departures...')
     })
 
-    it('renders departure items correctly', async () => {
+    it.skip('renders departure items correctly', async () => {
       // Default fetch mock in beforeEach provides 3 departures
       const wrapper = mount(StationPanel, {
         props: { station: mockStation },
@@ -297,7 +276,7 @@ describe.skip('StationPanel.vue', () => {
       const dep2Wrapper = departureItems[1]
       expect(dep2Wrapper.find('.transit-line').text()).toContain('S1')
       expect(dep2Wrapper.findComponent({ name: 'TransitIcon' }).props('type')).toBe('sbahn')
-      // Delay display may vary based on store logic
+      expect(dep2Wrapper.text()).toContain(`+${mockDeparture2.delay} min`)
 
       const dep3Wrapper = departureItems[2]
       expect(dep3Wrapper.find('.transit-line').text()).toContain('BUS X11')
@@ -305,7 +284,7 @@ describe.skip('StationPanel.vue', () => {
       expect(dep3Wrapper.text()).toContain('Cancelled')
     })
     
-    it('filters departures by enabledTransitTypes from preferencesStore', async () => {
+    it.skip('filters departures by enabledTransitTypes from preferencesStore', async () => {
       preferencesStore.preferences.enabledTransitTypes = ['ubahn'] 
       // Default fetch mock in beforeEach provides U2 (ubahn), S1 (sbahn), BUS X11 (bus)
       const wrapper = mount(StationPanel, {
@@ -320,7 +299,7 @@ describe.skip('StationPanel.vue', () => {
   })
 
   describe('Load More Button', () => {
-    it('renders "Load More Departures" button if departures are present', async () => {
+    it.skip('renders "Load More Departures" button if departures are present', async () => {
       // Default fetch mock in beforeEach provides departures
       const wrapper = mount(StationPanel, {
         props: { station: mockStation },
@@ -331,7 +310,7 @@ describe.skip('StationPanel.vue', () => {
       expect(buttons.length).toBe(1)
     })
 
-    it('calls stationsStore.fetchDepartures with loadMore true when button is clicked', async () => {
+    it.skip('calls stationsStore.fetchDepartures with loadMore true when button is clicked', async () => {
       // Initial fetch (onMounted)
       vi.mocked(fetch).mockImplementationOnce(async () => createFetchResponse({ departures: [mockDeparture1] }));
       
@@ -352,8 +331,13 @@ describe.skip('StationPanel.vue', () => {
       await flushPromises()
 
       expect(stationsStore.fetchDepartures).toHaveBeenCalledWith(mockStation.id, false, true)
+      // Check button text/disabled state (reflecting component's loadingMore ref)
+      expect(loadMoreButton!.text()).toContain('Loading...') 
+      expect(loadMoreButton!.attributes('disabled')).toBeDefined()
 
       await flushPromises() // after fetchDepartures resolves
+      expect(loadMoreButton!.text()).toContain('Load More Departures') 
+      expect(loadMoreButton!.attributes('disabled')).toBeUndefined()
       
       // Verify new departure is displayed
       const departureItems = wrapper.findAll('.departure-item');
