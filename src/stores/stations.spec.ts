@@ -220,7 +220,7 @@ describe('Stations Store', () => {
       expect(defaultStore.departures[stationId][0].tripId).toBe('cachedTrip')
     })
     
-    it('fetches new data if forced, even if cache is fresh', async () => { 
+    it('fetches new data if forced, even if cache is fresh', async () => {
       const cachedData = [{ ...mockDeparture, tripId: 'cachedTripForForceTest' }];
       const freshApiResponse = [{ ...mockDeparture, tripId: 'freshTripAfterForce', line: { name: 'S1', product: 'sbahn' as TransitProduct } }];
 
@@ -234,6 +234,27 @@ describe('Stations Store', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1); 
       expect(defaultStore.departures[stationId][0].tripId).toBe('freshTripAfterForce');
+    })
+
+    it('appends departures when loadMore is true', async () => {
+      const first = [
+        { ...mockDeparture, tripId: 't1', plannedWhen: '2024-01-01T10:00:00Z', when: '2024-01-01T10:00:00Z' },
+        { ...mockDeparture, tripId: 't2', plannedWhen: '2024-01-01T10:05:00Z', when: '2024-01-01T10:05:00Z' }
+      ]
+      vi.mocked(fetch).mockResolvedValueOnce(createFetchResponse({ departures: first }))
+      await defaultStore.fetchDepartures(stationId)
+      expect(defaultStore.departures[stationId]).toHaveLength(2)
+
+      const more = [
+        { ...mockDeparture, tripId: 't2', plannedWhen: '2024-01-01T10:05:00Z', when: '2024-01-01T10:05:00Z' },
+        { ...mockDeparture, tripId: 't3', plannedWhen: '2024-01-01T10:10:00Z', when: '2024-01-01T10:10:00Z' },
+        { ...mockDeparture, tripId: 't4', plannedWhen: '2024-01-01T10:15:00Z', when: '2024-01-01T10:15:00Z' }
+      ]
+      vi.mocked(fetch).mockResolvedValueOnce(createFetchResponse({ departures: more }))
+      await defaultStore.fetchDepartures(stationId, false, true)
+
+      const ids = defaultStore.departures[stationId].map(d => d.tripId)
+      expect(ids).toEqual(['t1', 't2', 't3', 't4'])
     })
 
     it('sets error state on departure fetch failure', async () => {
