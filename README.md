@@ -10,3 +10,6 @@ Install dependencies and run the test suite:
 npm install
 npx vitest run
 ```
+
+For CI environments, prefer `npm ci` to install dependencies
+according to the lock file.
