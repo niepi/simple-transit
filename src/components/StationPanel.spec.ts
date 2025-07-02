@@ -384,3 +384,4 @@ describe.skip('StationPanel.vue', () => {
     })
 
 });
+});
