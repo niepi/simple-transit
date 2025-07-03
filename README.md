@@ -52,4 +52,4 @@ npm version patch # or minor/major
 git push origin main --follow-tags
 ```
 
-Pushing a version tag like `v1.2.3` triggers the container build workflow which publishes the Docker image with the same tag.
+Pushing a version tag like `v1.2.3` triggers the container build workflow, which publishes a Docker image tagged with that version and with `latest`. Only tagged releases invoke this workflow.
