@@ -170,7 +170,7 @@ describe('Stations Store', () => {
       await defaultStore.fetchNearbyStations(52.52, 13.38)
       expect(defaultStore.stations).toEqual([])
       expect(defaultStore.isLoading).toBe(false)
-      expect(defaultStore.error).toBeNull() 
+      expect(defaultStore.error).toBe('Failed to fetch stations: Internal Server Error (500)')
     })
 
     it('sets error state on invalid coordinates', async () => {
@@ -220,7 +220,7 @@ describe('Stations Store', () => {
       expect(defaultStore.departures[stationId][0].tripId).toBe('cachedTrip')
     })
     
-    it('fetches new data if forced, even if cache is fresh', async () => { 
+    it('fetches new data if forced, even if cache is fresh', async () => {
       const cachedData = [{ ...mockDeparture, tripId: 'cachedTripForForceTest' }];
       const freshApiResponse = [{ ...mockDeparture, tripId: 'freshTripAfterForce', line: { name: 'S1', product: 'sbahn' as TransitProduct } }];
 
@@ -236,12 +236,42 @@ describe('Stations Store', () => {
       expect(defaultStore.departures[stationId][0].tripId).toBe('freshTripAfterForce');
     })
 
+    it('appends departures when loadMore is true', async () => {
+      const first = [
+        { ...mockDeparture, tripId: 't1', plannedWhen: '2024-01-01T10:00:00Z', when: '2024-01-01T10:00:00Z' },
+        { ...mockDeparture, tripId: 't2', plannedWhen: '2024-01-01T10:05:00Z', when: '2024-01-01T10:05:00Z' }
+      ]
+      vi.mocked(fetch).mockResolvedValueOnce(createFetchResponse({ departures: first }))
+      await defaultStore.fetchDepartures(stationId)
+      expect(defaultStore.departures[stationId]).toHaveLength(2)
+
+      const more = [
+        { ...mockDeparture, tripId: 't2', plannedWhen: '2024-01-01T10:05:00Z', when: '2024-01-01T10:05:00Z' },
+        { ...mockDeparture, tripId: 't3', plannedWhen: '2024-01-01T10:10:00Z', when: '2024-01-01T10:10:00Z' },
+        { ...mockDeparture, tripId: 't4', plannedWhen: '2024-01-01T10:15:00Z', when: '2024-01-01T10:15:00Z' }
+      ]
+      vi.mocked(fetch).mockResolvedValueOnce(createFetchResponse({ departures: more }))
+      await defaultStore.fetchDepartures(stationId, false, true)
+
+      const ids = defaultStore.departures[stationId].map(d => d.tripId)
+      expect(ids).toEqual(['t1', 't2', 't3', 't4'])
+    })
+
     it('sets error state on departure fetch failure', async () => {
-      defaultStore.clearStations(); 
+      defaultStore.clearStations();
       vi.mocked(fetch).mockResolvedValue(createFetchResponse({}, false, 500, 'Server Down'))
       await defaultStore.fetchDepartures(stationId)
       expect(defaultStore.departures[stationId]).toEqual([])
       expect(defaultStore.error).toBe('Failed to fetch departures: Server Down')
+    })
+
+    it('handles AbortError gracefully', async () => {
+      const abortError = new Error('abort')
+      abortError.name = 'AbortError'
+      vi.mocked(fetch).mockRejectedValueOnce(abortError)
+      await defaultStore.fetchDepartures(stationId)
+      expect(defaultStore.departures[stationId]).toBeUndefined()
+      expect(defaultStore.error).toBeNull()
     })
   })
 

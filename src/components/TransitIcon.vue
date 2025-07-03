@@ -4,7 +4,6 @@ import type { TransitType } from '../types'
 
 const props = defineProps<{
   type: TransitType
-  class?: string
 }>()
 
 const icon = computed(() => {
@@ -30,5 +29,5 @@ const icon = computed(() => {
 </script>
 
 <template>
-  <span :class="class" role="img" :aria-label="type">{{ icon }}</span>
+  <span role="img" :aria-label="type">{{ icon }}</span>
 </template>
