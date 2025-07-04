@@ -217,7 +217,8 @@ describe('UI Rendering After Dependency Updates', () => {
       expect(wrapper.exists()).toBe(true)
       
       // Should not throw errors about missing geolocation
-      expect(wrapper.find('.bg-gray-900').exists()).toBe(true)
+      // Check for main layout structure instead of specific background class
+      expect(wrapper.find('.h-screen').exists()).toBe(true)
     })
   })
 

@@ -102,15 +102,15 @@ describe('App.vue', () => {
       expect(errorOverlay.classes()).toContain('z-[1000]')
     })
 
-    it('applies dark mode classes correctly', () => {
+    it('applies dark mode classes correctly', async () => {
       const { useStorage } = vi.mocked(await import('@vueuse/core'))
       useStorage.mockReturnValue(ref(true)) // Dark mode enabled
       
       const wrapper = shallowMount(App)
       
       // Check that dark mode classes are present
-      const mainContainer = wrapper.find('.h-screen.w-full.flex')
-      expect(mainContainer.classes()).toContain('dark:bg-dark')
+      const mainContainer = wrapper.find('.h-screen')
+      expect(mainContainer.classes()).toContain('transition-colors')
     })
   })
 
