@@ -2,7 +2,7 @@ import { ref, onMounted } from 'vue'
 
 export interface PWAUpdateInfo {
   needRefresh: boolean
-  offlineReady: boolean
+  offlineReady: boolean // Keep for backward compatibility but not used
   updateServiceWorker: () => Promise<void>
 }
 
@@ -45,7 +45,7 @@ export function usePWA(): PWAUpdateInfo {
           },
           onOfflineReady() {
             console.log('PWA: App ready to work offline')
-            offlineReady.value = true
+            // offlineReady notification removed per user request
           },
           onRegistered(registration) {
             console.log('PWA: Service Worker registered', registration)

@@ -43,7 +43,7 @@ describe('PWAUpdateNotification.vue', () => {
     expect(wrapper.text()).toContain('Later')
   })
 
-  it('shows offline ready notification when offlineReady is true', async () => {
+  it('does not show offline ready notification (feature removed)', async () => {
     const { usePWA } = await import('../composables/usePWA')
     vi.mocked(usePWA).mockReturnValue({
       needRefresh: ref(false),
@@ -54,8 +54,9 @@ describe('PWAUpdateNotification.vue', () => {
     const wrapper = mount(PWAUpdateNotification)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[role="status"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('App Ready for Offline Use')
+    // Offline notification should not be shown
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('App Ready for Offline Use')
   })
 
   it('calls updateServiceWorker when update button is clicked', async () => {
