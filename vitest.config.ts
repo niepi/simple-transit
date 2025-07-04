@@ -7,4 +7,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
   },
+  resolve: {
+    alias: {
+      'virtual:pwa-register': new URL('./src/__mocks__/virtual-pwa-register.ts', import.meta.url).pathname
+    }
+  }
 })

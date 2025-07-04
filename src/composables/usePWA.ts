@@ -24,12 +24,21 @@ export function usePWA(): PWAUpdateInfo {
   }
 
   onMounted(async () => {
+    // Skip PWA initialization in test environment
+    if (typeof window === 'undefined' || import.meta.env.MODE === 'test') {
+      return
+    }
+
     if ('serviceWorker' in navigator) {
       try {
-        // Import the PWA register function
-        const { registerSW } = await import('virtual:pwa-register')
+        // Dynamically import PWA register function only in browser environment
+        const pwaModule = await import('virtual:pwa-register').catch(() => null)
+        if (!pwaModule) {
+          console.warn('PWA: virtual:pwa-register not available')
+          return
+        }
         
-        updateSW = registerSW({
+        updateSW = pwaModule.registerSW({
           onNeedRefresh() {
             console.log('PWA: New content available')
             needRefresh.value = true
