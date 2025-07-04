@@ -9,8 +9,8 @@ on:
   workflow_dispatch: # Allow manual trigger
 
 permissions:
-  administration: write
   contents: read
+  actions: read
 
 jobs:
   setup-branch-protection:
