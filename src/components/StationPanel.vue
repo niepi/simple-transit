@@ -146,7 +146,7 @@ function toggleFavorite() {
           <StarIcon v-if="isFavorite" class="w-5 h-5" />
           <StarIconOutline v-else class="w-5 h-5" />
         </button>
-        <h2 class="text-xl font-semibold">{{ station.name }}</h2>
+        <h2 class="text-xl font-semibold leading-tight hyphens-auto" lang="de">{{ station.name }}</h2>
       </div>
       <transit-filter v-if="favoritesStore.activeView === 'favorites'" />
     </div>
@@ -175,7 +175,7 @@ function toggleFavorite() {
         
         <!-- Allow the direction text to shrink on small screens so the time stays visible -->
         <div class="flex-1 mx-4 min-w-0">
-          <div class="font-medium truncate">{{ departure.direction }}</div>
+          <div class="font-medium leading-tight break-words hyphens-auto" lang="de">{{ departure.direction }}</div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
             {{ departure.platform ? `Platform ${departure.platform}` : '' }}
           </div>

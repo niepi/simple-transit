@@ -103,3 +103,24 @@
     @apply bg-red-100 text-red-800;
   }
 }
+
+@layer utilities {
+  /* German hyphenation for better text breaking of compound words */
+  .hyphens-auto {
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+  }
+  
+  .hyphens-manual {
+    hyphens: manual;
+    -webkit-hyphens: manual;
+    -ms-hyphens: manual;
+  }
+  
+  .hyphens-none {
+    hyphens: none;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+  }
+}
