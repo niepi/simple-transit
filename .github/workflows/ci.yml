@@ -1,12 +1,14 @@
 name: CI
 
 on:
+  # Only run CI on pull requests and feature branches
+  # No direct pushes to main allowed
   push:
-    branches:
-      - '**' # Runs on pushes to any branch
+    branches-ignore:
+      - main # Prevent direct pushes to main
   pull_request:
     branches:
-      - main # Runs on pull requests targeting the main branch
+      - main # Required for PR merges to main
 
 jobs:
   test:
@@ -23,5 +25,22 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps # Handle Vite 7.x compatibility with Vue plugin
 
+      - name: Run linting
+        run: npm run lint --if-present
+
+      - name: Run type checking
+        run: npm run typecheck --if-present
+
       - name: Run tests
         run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Check build artifacts
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed: dist directory not found"
+            exit 1
+          fi
+          echo "✅ Build completed successfully"

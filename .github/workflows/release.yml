@@ -1,0 +1,123 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Trigger on version tags
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch full history for changelog
+
+      - name: Verify tag is on main branch
+        run: |
+          # Check if the tag is reachable from main branch
+          if ! git merge-base --is-ancestor ${{ github.sha }} origin/main; then
+            echo "❌ Tag ${{ github.ref_name }} is not on main branch"
+            echo "GitHub releases are only created for tags on the main branch"
+            exit 1
+          fi
+          echo "✅ Tag ${{ github.ref_name }} is on main branch - proceeding with release"
+
+      - name: Extract version from tag
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "Generating changelog from $PREV_TAG to ${{ env.VERSION }}"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD --no-merges)
+          else
+            echo "No previous tag found, generating changelog from beginning"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Limit changelog to reasonable length (first 50 commits)
+          CHANGELOG=$(echo "$CHANGELOG" | head -50)
+          
+          # Save changelog to environment
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          # Create a more detailed changelog if there are many changes
+          COMMIT_COUNT=$(echo "$CHANGELOG" | wc -l)
+          if [ "$COMMIT_COUNT" -eq 50 ]; then
+            echo "And more..." >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const tag = '${{ env.VERSION }}';
+            
+            // Determine if this is a prerelease (contains alpha, beta, rc, etc.)
+            const isPrerelease = /-(alpha|beta|rc|pre)/i.test(tag);
+            
+            try {
+              const release = await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                name: `Release ${tag}`,
+                body: `## Changes in ${tag}
+
+${{ env.CHANGELOG }}
+
+---
+
+## 📦 Container Image
+The container image for this release is available at:
+\`\`\`bash
+docker pull ghcr.io/${owner}/${repo}:${tag}
+docker pull ghcr.io/${owner}/${repo}:latest
+\`\`\`
+
+## 🚀 Quick Start
+\`\`\`bash
+# Run with Docker
+docker run -p 8080:80 ghcr.io/${owner}/${repo}:${tag}
+
+# Or install as PWA
+# Visit the app URL and click "Install" or "Add to Home Screen"
+\`\`\`
+
+## 🔗 Links
+- [Container Images](https://github.com/${owner}/${repo}/pkgs/container/${repo})
+- [Documentation](https://github.com/${owner}/${repo}#readme)
+- [Workflow Documentation](https://github.com/${owner}/${repo}/blob/main/.github/WORKFLOW.md)`,
+                draft: false,
+                prerelease: isPrerelease,
+                generate_release_notes: false
+              });
+              
+              console.log(`✅ GitHub Release created: ${release.data.html_url}`);
+              console.log(`📋 Release ID: ${release.data.id}`);
+              console.log(`🏷️  Tag: ${tag}`);
+              console.log(`🔖 Prerelease: ${isPrerelease}`);
+              
+              return release.data.html_url;
+            } catch (error) {
+              console.error('❌ Failed to create release:', error.message);
+              throw error;
+            }
+
+      - name: Release summary
+        run: |
+          echo "✅ GitHub Release ${{ env.VERSION }} created successfully"
+          echo "🐳 Container build will be triggered automatically"
+          echo "📦 Container image will be available at: ghcr.io/${{ github.repository }}:${{ env.VERSION }}"

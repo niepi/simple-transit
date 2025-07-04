@@ -3,11 +3,12 @@ name: Build and Push Container
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*' # Only build containers for version tags
 
 permissions:
   contents: read
   packages: write
+  actions: read
 
 jobs:
   build:
@@ -15,6 +16,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch full history to check branch
+
+      - name: Verify tag is on main branch
+        run: |
+          # Check if the tag is reachable from main branch
+          if ! git merge-base --is-ancestor ${{ github.sha }} origin/main; then
+            echo "❌ Tag ${{ github.ref_name }} is not on main branch"
+            echo "Container images are only built for tags on the main branch"
+            exit 1
+          fi
+          echo "✅ Tag ${{ github.ref_name }} is on main branch - proceeding with build"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -32,7 +45,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set release version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
@@ -55,4 +68,11 @@ jobs:
         run: |
           docker push $IMAGE:${{ env.VERSION }}
           docker push $IMAGE:latest
+
+      - name: Container build summary
+        run: |
+          echo "✅ Container image built and pushed successfully"
+          echo "📦 Image: ${{ env.IMAGE }}:${{ env.VERSION }}"
+          echo "📦 Latest: ${{ env.IMAGE }}:latest"
+          echo "🏷️  Tag: ${{ env.VERSION }}"
 
