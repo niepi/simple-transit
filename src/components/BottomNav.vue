@@ -4,16 +4,11 @@ import { StarIcon } from '@heroicons/vue/24/solid'
 import { useFavoritesStore } from '../stores/favorites'
 
 const favoritesStore = useFavoritesStore()
-
-console.log('[BottomNav] Component initialized')
-console.log('[BottomNav] Active view:', favoritesStore.activeView)
-console.log('[BottomNav] Store:', favoritesStore)
-console.log('[BottomNav] Template structure:', document.querySelector('nav.fixed'))
 </script>
 
 <template>
   <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-2 md:p-4 transition-colors">
-    <nav class="w-full max-w-sm mx-auto bg-blue-500 dark:bg-blue-600 rounded-lg shadow-lg overflow-hidden transition-colors">
+    <nav class="w-full max-w-sm mx-auto bg-blue-500 dark:bg-blue-600 rounded-lg shadow-lg overflow-hidden transition-colors" aria-label="View selector" role="tablist">
       <div class="flex">
         <button
           @click="favoritesStore.setActiveView('all')"
@@ -23,6 +18,9 @@ console.log('[BottomNav] Template structure:', document.querySelector('nav.fixed
               ? 'bg-blue-700 dark:bg-blue-800 text-white'
               : 'bg-blue-400 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
           ]"
+          role="tab"
+          :aria-selected="favoritesStore.activeView === 'all'"
+          aria-controls="stations-list"
         >
           All Stations
         </button>
@@ -34,6 +32,9 @@ console.log('[BottomNav] Template structure:', document.querySelector('nav.fixed
               ? 'bg-blue-700 dark:bg-blue-800 text-white'
               : 'bg-blue-400 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
           ]"
+          role="tab"
+          :aria-selected="favoritesStore.activeView === 'favorites'"
+          aria-controls="stations-list"
         >
           <div class="flex items-center justify-center gap-2">
             <StarIcon class="w-5 h-5" />

@@ -151,11 +151,11 @@ function toggleFavorite() {
       <transit-filter v-if="favoritesStore.activeView === 'favorites'" />
     </div>
     
-    <div v-if="loading" class="py-4 text-center text-gray-500 dark:text-dark-secondary">
+    <div v-if="loading" class="py-4 text-center text-gray-500 dark:text-gray-400">
       Loading departures...
     </div>
     
-    <div v-else-if="stationDepartures.length === 0" class="py-4 text-center text-gray-500 dark:text-dark-secondary">
+    <div v-else-if="stationDepartures.length === 0" class="py-4 text-center text-gray-500 dark:text-gray-400">
       No departures in the next 30 minutes <!-- Use original message -->
     </div>
     
@@ -163,7 +163,7 @@ function toggleFavorite() {
       <!-- Departures list - simplified, no ElTag/ElTooltip yet -->
       <div class="space-y-2">
       <div v-for="departure in stationDepartures" :key="departure.tripId" 
-           class="departure-item flex items-center p-2 rounded-lg shadow-sm bg-white dark:bg-dark-card dark:hover:bg-dark-hover transition-colors">
+           class="departure-item flex items-center p-2 rounded-lg shadow-sm bg-white dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
         <div :class="['transit-line px-2 py-1 rounded text-white font-medium flex items-center gap-2', 
                       getTransitColor(getTransitType(departure.line.product))]">
           <TransitIcon 
@@ -176,7 +176,7 @@ function toggleFavorite() {
         <!-- Allow the direction text to shrink on small screens so the time stays visible -->
         <div class="flex-1 mx-4 min-w-0">
           <div class="font-medium truncate">{{ departure.direction }}</div>
-          <div class="text-sm text-gray-500 dark:text-dark-secondary">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
             {{ departure.platform ? `Platform ${departure.platform}` : '' }}
           </div>
         </div>
