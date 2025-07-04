@@ -1,6 +1,10 @@
 # Build stage
 FROM node:24.3-alpine AS builder
 
+# Accept version as build argument
+ARG VERSION=dev
+ENV VITE_APP_VERSION=${VERSION}
+
 WORKDIR /app
 
 # Install dependencies and build
@@ -16,7 +20,7 @@ ENV NODE_ENV=production
 
 # Build application
 COPY . .
-RUN npm run build
+RUN echo "Building with version: ${VITE_APP_VERSION}" && npm run build
 
 # Production stage
 FROM nginx:1.29-alpine

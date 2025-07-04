@@ -37,7 +37,11 @@ Visit [http://localhost:5173](http://localhost:5173) to see your app.
 # Run pre-built container
 docker run -p 8080:80 ghcr.io/niepi/simple-transit-vue:latest
 
-# Or build locally
+# Or build locally with version
+docker build --build-arg VERSION=v1.0.0 -t simple-transit .
+docker run -p 8080:80 simple-transit
+
+# Build without version (uses package.json version)
 docker build -t simple-transit .
 docker run -p 8080:80 simple-transit
 ```
@@ -180,6 +184,20 @@ PWA settings are in `vite.config.ts`:
 - Cache strategies for images and app shell
 - Service worker registration and updates
 - Manifest configuration for mobile installation
+
+### Version Management
+
+The app version displayed in the UI is sourced dynamically:
+
+**Container builds** (recommended for production):
+- Version passed via Docker build arg: `--build-arg VERSION=v1.0.0`
+- Ensures UI version matches the actual deployed container tag
+- Automatic in CI/CD when building from tags
+
+**Local development**:
+- Uses `package.json` version as fallback
+- Updated automatically by `prebuild` script
+- Stored in `.env` file for Vite to use
 
 ## 🤝 Contributing
 

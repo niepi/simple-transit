@@ -1,11 +1,17 @@
 import { readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
 
-// Read package.json version
+// Check if version is already set via environment variable (e.g., Docker build)
+const envVersion = process.env.VITE_APP_VERSION
+if (envVersion) {
+  console.log(`Using version from environment: ${envVersion}`)
+  process.exit(0)
+}
+
+// Read package.json version as fallback
 const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'))
 const version = packageJson.version
 
-// Update .env file with current version
+// Update .env file with current version (for local development)
 const envPath = './.env'
 let envContent = ''
 
@@ -27,4 +33,4 @@ if (versionRegex.test(envContent)) {
 }
 
 writeFileSync(envPath, envContent)
-console.log(`Updated VITE_APP_VERSION to ${version} in .env file`)
+console.log(`Updated VITE_APP_VERSION to ${version} in .env file (local development)`)

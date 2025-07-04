@@ -51,7 +51,12 @@ jobs:
         run: |
           IMAGE=ghcr.io/${{ github.repository }}
           IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
-          docker build -t $IMAGE:${{ env.VERSION }} -t $IMAGE:latest .
+          echo "🏗️  Building container with version: ${{ env.VERSION }}"
+          docker build \
+            --build-arg VERSION=${{ env.VERSION }} \
+            -t $IMAGE:${{ env.VERSION }} \
+            -t $IMAGE:latest \
+            .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
       - name: Scan image with Trivy
