@@ -2,10 +2,14 @@
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
 import { ArrowPathIcon, SunIcon, MoonIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import BottomNav from './components/BottomNav.vue'
-import { useGeolocation, usePreferredDark, useStorage } from '@vueuse/core'
+import { usePreferredDark, useStorage } from '@vueuse/core'
 import { useStationsStore } from './stores/stations'
 import { useFavoritesStore } from './stores/favorites'
 import StationPanel from './components/StationPanel.vue'
+import ErrorBoundary from './components/ErrorBoundary.vue'
+import { useMap } from './composables/useMap'
+import { useGeolocationHandling } from './composables/useGeolocationHandling'
+import { usePerformanceMonitoring } from './composables/usePerformanceMonitoring'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -17,40 +21,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: '/images/marker-shadow.png'
 })
 
-const { coords, isSupported } = useGeolocation()
-const geolocationError = ref<string | null>(null)
-
-// Handle geolocation support
-if (!isSupported) {
-  geolocationError.value = 'Geolocation is not supported in your browser'
-}
-
-// Handle page reload
-function handleReload(): void {
-  if (typeof window !== 'undefined') {
-    window.location.reload()
-  }
-}
-
-// Clear localStorage and reload
-function clearLocalStorage(): void {
-  if (typeof window !== 'undefined') {
-    window.localStorage.clear()
-    window.location.reload()
-  }
-}
+const { coords, isSupported, geolocationError, handleReload, clearLocalStorage } = useGeolocationHandling()
 
 const store = useStationsStore()
 const favoritesStore = useFavoritesStore()
 const mapRef = ref<HTMLElement | null>(null)
-const map = ref<any>(null)
-const markers = ref<any[]>([])
-const centerMarker = ref<any>(null)
-const allowAutoCenter = ref(true)
-const isMapCentered = ref(true)
+
+// Performance monitoring
+const { measureCustomMetric } = usePerformanceMonitoring()
 
 // Dark mode handling
 const isDark = useStorage('simple-transit-dark-mode', usePreferredDark().value)
+
+const { map, markers, centerMarker, allowAutoCenter, isMapCentered, isMapReady, clearMarkers, updateMarkers, handleResize, initMap } = useMap(mapRef, coords, isDark)
 
 // Watch dark mode changes
 watch(isDark, (dark) => {
@@ -68,209 +51,13 @@ onMounted(() => {
   }
 })
 
-function clearMarkers() {
-  markers.value.forEach(marker => marker.remove())
-  markers.value = []
-  
-  if (centerMarker.value) {
-    centerMarker.value.remove()
-    centerMarker.value = null
-  }
-}
-
-function updateMarkers() {
-  if (!map.value) return
-  
-  clearMarkers()
-  
-  // Add markers for each station
-  store.stations.forEach(station => {
-    const marker = L.marker([station.location.latitude, station.location.longitude], {
-      icon: L.divIcon({
-        html: `
-          <div class="relative z-[500]">
-            <div class="w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center">
-              <div class="w-4 h-4 rounded-full bg-red-500"></div>
-            </div>
-            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-1 rounded shadow-md text-xs whitespace-nowrap z-[1000] text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
-              ${station.name}
-            </div>
-          </div>
-        `,
-        className: 'station-marker !z-[500]',
-        iconSize: [24, 24],
-        iconAnchor: [12, 24],  // Adjusted to account for label
-        popupAnchor: [0, -36]  // Adjusted to show above label
-      })
-    })
-    
-    marker.addTo(map.value)
-    marker.bindPopup(`
-      <div class="p-2">
-        <div class="font-bold mb-1">${station.name}</div>
-        <div class="text-sm text-gray-600">${Math.round(station.distance ?? 0)} meters away</div>
-      </div>
-    `, {
-      offset: [0, -12]  // Adjust popup offset
-    })
-    markers.value.push(marker)
-  })
-  
-  // Add user location marker if available
-  if (coords.value.latitude && coords.value.longitude) {
-    const userMarker = L.marker([coords.value.latitude, coords.value.longitude], {
-      icon: L.divIcon({
-        html: `
-          <div class="relative z-[600]">
-            <div class="w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
-              <div class="w-6 h-6 rounded-full bg-blue-500 animate-pulse"></div>
-            </div>
-            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-1 rounded shadow-md text-xs font-semibold whitespace-nowrap z-[1000] text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
-              You are here
-            </div>
-          </div>
-        `,
-        className: 'user-marker !z-[600]',
-        iconSize: [32, 32],
-        iconAnchor: [16, 28],  // Adjusted to account for label
-        popupAnchor: [0, -44]  // Adjusted to show above label
-      })
-    })
-    
-    userMarker.addTo(map.value)
-    userMarker.bindPopup('<div class="p-2 font-semibold dark:bg-gray-800 dark:text-white">Your Location</div>', {
-      offset: [0, -16]  // Adjust popup offset
-    })
-    markers.value.push(userMarker)
-  }
-}
-
-// Watch for window resize to handle map resizing
-const handleResize = () => {
-  if (map.value) {
-    nextTick(() => {
-      map.value.invalidateSize()
-      // Re-center map if we have coordinates
-      if (coords.value.latitude && coords.value.longitude) {
-        map.value.setView([coords.value.latitude, coords.value.longitude], map.value.getZoom())
-      }
-    })
-  }
-}
-
-// Initialize map after container is ready
-function initMap() {
-  if (!mapRef.value || map.value) return
-
-  try {      
-    // Create map instance with default view of Berlin
-    map.value = L.map(mapRef.value, {
-      zoomControl: false, // We'll add controls separately
-      attributionControl: false,
-      minZoom: 10,
-      maxZoom: 18,
-      maxBounds: [
-        [52.3, 13.1], // Southwest
-        [52.7, 13.8]  // Northeast
-      ]
-    }).setView([52.52, 13.405], 13)
-
-    // Add zoom control to bottom right
-    L.control.zoom({ position: 'bottomright' }).addTo(map.value)
-    
-    // Add attribution control to bottom left
-    L.control.attribution({ position: 'bottomleft' }).addTo(map.value)
-    
-    // Log map initialization
-    console.log('[MPC] Map initialized')
-    
-    // Create light and dark tile layers
-    const lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 19,
-      detectRetina: true,
-      className: 'map-tiles'
-    })
-
-    const darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 19,
-      detectRetina: true,
-      className: 'map-tiles'
-    })
-
-    // Add initial tile layer based on dark mode
-    ;(isDark.value ? darkTileLayer : lightTileLayer).addTo(map.value)
-
-    // Watch dark mode changes to update map theme
-    watch(isDark, (dark) => {
-      if (dark) {
-        map.value.removeLayer(lightTileLayer)
-        darkTileLayer.addTo(map.value)
-      } else {
-        map.value.removeLayer(darkTileLayer)
-        lightTileLayer.addTo(map.value)
-      }
-    })
-    
-    // Only update stations when map is moved after we have user location
-    map.value.on('movestart', () => {
-      allowAutoCenter.value = false
-      isMapCentered.value = false
-      console.log('[MPC] Map movement started')
-    })
-    
-    map.value.on('move', () => {
-      // Update map center in store
-      const center = map.value.getCenter()
-      console.log('[MPC] Map moving, center:', { lat: center.lat, lng: center.lng })
-      store.updateMapCenter(center.lat, center.lng)
-    })
-    
-    map.value.on('moveend', async () => {
-      if (coords.value.latitude && coords.value.longitude) {
-        const center = map.value.getCenter()
-        // Check if map is centered on user location
-        const userLatLng = L.latLng(coords.value.latitude, coords.value.longitude)
-        const centerLatLng = L.latLng(center.lat, center.lng)
-        isMapCentered.value = userLatLng.distanceTo(centerLatLng) < 10 // Within 10 meters
-        
-        // Update center marker position and store's map center
-        if (centerMarker.value) {
-          store.updateMapCenter(center.lat, center.lng)
-        }
-        
-        await store.fetchNearbyStations(center.lat, center.lng)
-        updateMarkers()
-      }
-    })
-
-    isMapReady.value = true
-  } catch (error) {
-    console.error('Error initializing map:', error)
-  }
-}
-
-// Wait for container to be ready
-const isMapReady = ref(false)
-
-// Debug logging
+// Component initialization
 onMounted(() => {
-  console.log('[App] Component mounted')
-  console.log('[App] BottomNav exists:', !!document.querySelector('nav.fixed'))
-  console.log('[App] DOM structure:', document.body.innerHTML)
+  // Component mounted successfully
 })
 
 // Computed property for filtered stations
 const filteredStations = computed(() => {
-  console.log('[App] Computing filtered stations')
-  console.log('[App] Active view:', favoritesStore.activeView)
-  console.log('[App] Sorted stations:', store.sortedStations)
-  console.log('Active view:', favoritesStore.activeView)
-  console.log('Sorted stations:', store.sortedStations)
-  console.log('Favorite IDs:', favoritesStore.favoriteIds)
   
   if (favoritesStore.activeView === 'favorites') {
     return store.sortedStations.filter(station => 
@@ -303,9 +90,11 @@ watch(
       }
       
       try {
-        // Fetch nearby stations
-        await store.fetchNearbyStations(newCoords.latitude, newCoords.longitude)
-        updateMarkers()
+        // Fetch nearby stations with performance monitoring
+        await measureCustomMetric('stations-fetch', () => 
+          store.fetchNearbyStations(newCoords.latitude, newCoords.longitude)
+        )
+        measureCustomMetric('map-markers-update', () => updateMarkers())
       } catch (error) {
         console.error('Error loading stations:', error)
       }
@@ -325,13 +114,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-screen w-full flex md:flex-row flex-col dark:bg-dark transition-colors">
+  <div class="h-screen w-full flex md:flex-row flex-col transition-colors">
     <!-- Control buttons -->
     <div class="absolute top-4 right-4 z-[1000] flex gap-2">
       <!-- Dark mode toggle -->
       <button
         @click="isDark = !isDark"
         class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all dark:hover:bg-gray-700"
+        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
         :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
       >
         <component
@@ -344,16 +134,18 @@ onUnmounted(() => {
       <button
         @click="clearLocalStorage"
         class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all dark:hover:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+        aria-label="Clear local storage and reset app"
         title="Clear local storage and reset app"
       >
         <TrashIcon class="w-5 h-5 text-red-500" />
       </button>
     </div>
     <!-- Map Section -->
-    <div class="w-full md:w-2/3 h-[40vh] md:h-screen relative">
+    <main role="main"
+     class="w-full md:w-2/3 h-[40vh] md:h-screen relative" aria-label="Interactive map showing nearby transit stations">
 
       <!-- Map Container -->
-      <div ref="mapRef" class="absolute inset-0 z-0">
+      <div ref="mapRef" class="absolute inset-0 z-0" role="application" aria-label="Transit map">
         <!-- Map will be mounted here -->
       </div>
       <!-- Center Indicator -->
@@ -395,19 +187,20 @@ onUnmounted(() => {
           </template>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- Stations Panel -->
-    <div class="w-full md:w-1/3 h-[60vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 flex flex-col">
+    <aside class="w-full md:w-1/3 h-[60vh] md:h-screen bg-gray-50 dark:bg-gray-900 transition-all duration-300 ease-in-out border-t md:border-l border-gray-200 dark:border-gray-700 flex flex-col" aria-label="Station information panel">
       <!-- Main Content -->
       <div class="flex-1 overflow-y-auto p-4">
         <div class="flex justify-between items-center mb-4">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
+          <h1 id="stations-heading" class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
           <button 
             v-if="coords.latitude && coords.longitude"
             @click="store.fetchNearbyStations(coords.latitude, coords.longitude)"
             :disabled="store.isLoading"
             class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg transition-colors disabled:opacity-50"
+            aria-label="Refresh stations list"
             title="Refresh stations"
           >
             <ArrowPathIcon :class="{'animate-spin': store.isLoading}" class="w-5 h-5" />
@@ -415,7 +208,7 @@ onUnmounted(() => {
         </div>
       
         <!-- Station List -->
-        <div class="space-y-4">
+        <section aria-labelledby="stations-heading" class="space-y-4">
           <div v-if="!coords.latitude || !coords.longitude" class="text-center py-8 text-gray-500">
             Waiting for location access...
           </div>
@@ -429,11 +222,9 @@ onUnmounted(() => {
           </div>
           
           <template v-else-if="store.sortedStations.length > 0">
-            <StationPanel
-              v-for="station in filteredStations"
-              :key="station.id"
-              :station="station"
-            />
+            <ErrorBoundary v-for="station in filteredStations" :key="station.id">
+              <StationPanel :station="station" />
+            </ErrorBoundary>
           </template>
           
           <div v-else-if="favoritesStore.activeView === 'favorites' && filteredStations.length === 0" class="text-center py-8 text-gray-500">
@@ -442,10 +233,10 @@ onUnmounted(() => {
           <div v-else class="text-center py-8 text-gray-500">
             No stations found nearby
           </div>
-        </div>
+        </section>
       </div>
       <!-- Bottom Navigation -->
       <BottomNav />
-    </div>
+    </aside>
   </div>
 </template>
