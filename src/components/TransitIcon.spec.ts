@@ -23,7 +23,16 @@ describe('TransitIcon.vue', () => {
       })
       expect(wrapper.text()).toBe(expectedIcon)
       expect(wrapper.attributes('role')).toBe('img')
-      expect(wrapper.attributes('aria-label')).toBe(type)
+      // Check that aria-label contains the expected accessible label
+      const ariaLabel = wrapper.attributes('aria-label')
+      expect(ariaLabel).toBeDefined()
+      expect(ariaLabel).toContain(type === 'sbahn' ? 'S-Bahn' : 
+                                  type === 'ubahn' ? 'U-Bahn' : 
+                                  type === 'tram' ? 'Tram' :
+                                  type === 'bus' ? 'Bus' :
+                                  type === 'ferry' ? 'Ferry' :
+                                  type === 'express' ? 'Express' :
+                                  type === 'regional' ? 'Regional' : 'Transit')
     })
   })
 
@@ -74,6 +83,6 @@ describe('TransitIcon.vue', () => {
       props: { type: 'helicopter' as TransitType }, // Cast to satisfy type, tests default case
     })
     expect(wrapper.text()).toBe('🚊') // Default icon
-    expect(wrapper.attributes('aria-label')).toBe('helicopter')
+    expect(wrapper.attributes('aria-label')).toBe('Transit vehicle')
   })
 })

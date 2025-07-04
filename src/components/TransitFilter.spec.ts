@@ -68,7 +68,7 @@ const transitOptionsInComponent: { label: string, value: TransitType }[] = [
 ]
 const transitTypes = transitOptionsInComponent.map(opt => opt.value)
 
-describe.skip('TransitFilter.vue', () => {
+describe('TransitFilter.vue', () => {
   let pinia: ReturnType<typeof createPinia>
   let preferencesStore: ReturnType<typeof usePreferencesStore>
 
@@ -99,8 +99,8 @@ describe.skip('TransitFilter.vue', () => {
 
     transitTypes.forEach((type, index) => {
       const checkbox = checkboxes[index]
-      // The component uses option.value as the label prop for ElCheckbox
-      expect(checkbox.props('label')).toBe(transitOptionsInComponent[index].value)
+      // The component uses option.label as the label prop for ElCheckbox
+      expect(checkbox.props('label')).toBe(transitOptionsInComponent[index].label)
       const icon = checkbox.findComponent({ name: 'TransitIcon' })
       expect(icon.exists()).toBe(true)
       expect(icon.props('type')).toBe(type)

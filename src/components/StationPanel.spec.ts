@@ -3,6 +3,9 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import StationPanel from './StationPanel.vue'
 import { useStationsStore } from '../stores/stations'
+import { useFavoritesStore } from '../stores/favorites'
+import { usePreferencesStore } from '../stores/preferences'
+import type { Station, Trip, Pinia } from '../types'
 
 // --- Global Mocks ---
 global.fetch = vi.fn()
@@ -123,7 +126,7 @@ function createFetchResponse(data: unknown, ok = true, status = 200) {
 }
 
 
-describe.skip('StationPanel.vue', () => {
+describe('StationPanel.vue', () => {
   let pinia: Pinia
   let stationsStore: ReturnType<typeof useStationsStore>
   let favoritesStore: ReturnType<typeof useFavoritesStore>
