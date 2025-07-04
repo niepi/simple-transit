@@ -53,7 +53,8 @@ export default defineConfig({
         manualChunks: {
           'vendor': ['vue', 'pinia', '@vueuse/core'],
           'map': ['leaflet'],
-          'ui': ['@headlessui/vue', 'element-plus']
+          'ui': ['@headlessui/vue', 'element-plus'],
+          'icons': ['@heroicons/vue/24/solid', '@heroicons/vue/24/outline', '@element-plus/icons-vue']
         }
       }
     },
