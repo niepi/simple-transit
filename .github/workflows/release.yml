@@ -1,0 +1,189 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  # Wait for all required checks to pass before creating release
+  wait-for-checks:
+    runs-on: ubuntu-latest
+    outputs:
+      checks-passed: ${{ steps.check-status.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Wait for CI checks to complete
+        uses: actions/github-script@v7
+        id: check-status
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const ref = context.sha;
+            
+            // Get the commit associated with this tag
+            const commit = await github.rest.repos.getCommit({
+              owner,
+              repo,
+              ref
+            });
+            
+            console.log(`Checking status for commit: ${commit.data.sha}`);
+            
+            // Wait for status checks to complete (max 10 minutes)
+            const maxWaitTime = 10 * 60 * 1000; // 10 minutes
+            const pollInterval = 30 * 1000; // 30 seconds
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < maxWaitTime) {
+              // Get all status checks for this commit
+              const { data: statusChecks } = await github.rest.repos.getCombinedStatusForRef({
+                owner,
+                repo,
+                ref: commit.data.sha
+              });
+              
+              // Get check runs (for GitHub Actions)
+              const { data: checkRuns } = await github.rest.checks.listForRef({
+                owner,
+                repo,
+                ref: commit.data.sha
+              });
+              
+              console.log(`Status checks state: ${statusChecks.state}`);
+              console.log(`Check runs: ${checkRuns.check_runs.length} total`);
+              
+              // Check if all status checks are successful
+              const statusChecksPassed = statusChecks.state === 'success' || 
+                                       (statusChecks.statuses.length === 0 && statusChecks.state !== 'failure');
+              
+              // Check if all GitHub Actions check runs are successful
+              const checkRunsPassed = checkRuns.check_runs.length === 0 || 
+                                    checkRuns.check_runs.every(run => 
+                                      run.status === 'completed' && run.conclusion === 'success'
+                                    );
+              
+              // Log details for debugging
+              if (checkRuns.check_runs.length > 0) {
+                for (const run of checkRuns.check_runs) {
+                  console.log(`Check run "${run.name}": status=${run.status}, conclusion=${run.conclusion}`);
+                }
+              }
+              
+              if (statusChecksPassed && checkRunsPassed) {
+                console.log('All checks passed!');
+                return 'success';
+              }
+              
+              // Check if any checks failed
+              const anyStatusFailed = statusChecks.statuses.some(status => status.state === 'failure');
+              const anyCheckRunFailed = checkRuns.check_runs.some(run => 
+                run.status === 'completed' && run.conclusion === 'failure'
+              );
+              
+              if (anyStatusFailed || anyCheckRunFailed) {
+                console.log('Some checks failed');
+                return 'failure';
+              }
+              
+              console.log('Waiting for checks to complete...');
+              await new Promise(resolve => setTimeout(resolve, pollInterval));
+            }
+            
+            console.log('Timeout waiting for checks');
+            return 'timeout';
+
+      - name: Fail if checks didn't pass
+        if: steps.check-status.outputs.result != 'success'
+        run: |
+          echo "Checks status: ${{ steps.check-status.outputs.result }}"
+          if [ "${{ steps.check-status.outputs.result }}" = "failure" ]; then
+            echo "❌ Some CI checks failed. Release creation aborted."
+            exit 1
+          elif [ "${{ steps.check-status.outputs.result }}" = "timeout" ]; then
+            echo "⏰ Timeout waiting for CI checks. Release creation aborted."
+            exit 1
+          else
+            echo "❓ Unknown check status. Release creation aborted."
+            exit 1
+          fi
+
+  # Create release only after all checks pass
+  create-release:
+    needs: wait-for-checks
+    runs-on: ubuntu-latest
+    if: needs.wait-for-checks.outputs.checks-passed == 'success'
+    outputs:
+      release-created: ${{ steps.create-release.outputs.release-created }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch full history for changelog generation
+
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "Generating changelog from $PREV_TAG to ${{ env.VERSION }}"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD --no-merges)
+          else
+            echo "No previous tag found, generating changelog from beginning"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Save changelog to file and environment
+          echo "$CHANGELOG" > changelog.txt
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const tag = '${{ env.VERSION }}';
+            
+            try {
+              const release = await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                name: `Release ${tag}`,
+                body: `## Changes in ${tag}\n\n${{ env.CHANGELOG }}\n\n---\n\n🚀 **Container Image**: \`ghcr.io/${owner}/${repo}:${tag}\`\n\n📦 **Installation**: The container image will be available shortly after this release is published.`,
+                draft: false,
+                prerelease: tag.includes('-'),
+                generate_release_notes: false
+              });
+              
+              console.log(`✅ Release created: ${release.data.html_url}`);
+              return 'true';
+            } catch (error) {
+              console.error('❌ Failed to create release:', error.message);
+              return 'false';
+            }
+
+      - name: Release creation summary
+        run: |
+          if [ "${{ steps.create-release.outputs.result }}" = "true" ]; then
+            echo "✅ Release ${{ env.VERSION }} created successfully"
+            echo "🚀 Container build will start automatically"
+          else
+            echo "❌ Failed to create release"
+            exit 1
+          fi
