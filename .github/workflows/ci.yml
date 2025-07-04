@@ -21,7 +21,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci # Using npm ci for faster, more reliable builds
+        run: npm ci --legacy-peer-deps # Handle Vite 7.x compatibility with Vue plugin
 
       - name: Run tests
         run: npm test

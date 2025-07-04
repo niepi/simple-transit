@@ -9,7 +9,7 @@ COPY tsconfig*.json ./
 
 # Install dependencies with dev dependencies for build
 RUN npm install -g npm@latest && \
-    NODE_ENV=development npm install && \
+    NODE_ENV=development npm install --legacy-peer-deps && \
     npm cache clean --force
 
 ENV NODE_ENV=production
