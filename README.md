@@ -88,28 +88,45 @@ npm run test -- --watch
 
 Tests cover components, composables, utilities, and PWA functionality.
 
-## 🚀 Deployment & Releases
+## 🚀 Development & Deployment
 
-### Automated Release Process
+### Pull Request Workflow
 
-This project uses a **fully automated release system** with quality gates:
+This project uses a **pull request-only workflow** with strict quality gates:
 
 ```bash
-# Create a release (triggers full automation)
-git tag v1.2.0
-git push origin v1.2.0
+# 1. Create feature branch
+git checkout -b feature/my-feature
+
+# 2. Make changes and push
+git push origin feature/my-feature
+
+# 3. Create PR (triggers CI)
+gh pr create --title "Add feature" --body "Description"
+
+# 4. After PR approval and CI success → Merge to main
 ```
 
-**What happens automatically:**
-1. ⏳ **CI Checks** - Linting, type checking, tests, build verification
-2. ✅ **Release Creation** - Only if all CI checks pass
-3. 🐳 **Container Build** - Multi-stage Docker build with security scanning
-4. 📦 **Container Publish** - Push to GitHub Container Registry
-5. 📝 **Release Notes** - Auto-generated changelog from commits
+### Container Deployment
+
+Container images are built **only for version tags on main branch**:
+
+```bash
+# After successful PR merge to main
+git checkout main && git pull
+git tag v1.2.0
+git push origin v1.2.0  # Triggers container build
+```
+
+**Automated process:**
+1. ✅ **Tag validation** - Ensures tag is on main branch
+2. 🧪 **Build & Security scan** - Full build + Trivy scanning
+3. 📦 **Container publish** - Push to GitHub Container Registry
 
 **Quality Gates:**
-- ❌ Failed CI = No release created = No container built
-- ✅ All checks pass = Release + Container automatically available
+- ❌ No direct pushes to main (branch protection)
+- ❌ PR merge blocked if CI fails
+- ❌ Container build blocked if tag not on main
 
 ### Container Images
 
@@ -174,10 +191,14 @@ PWA settings are in `vite.config.ts`:
 
 ### Development Workflow
 
-- All PRs require passing CI (tests, linting, build)
+- All changes must go through pull requests
+- PRs require passing CI (tests, linting, build) and code review
+- No direct pushes to main branch (enforced by branch protection)
 - Use conventional commit messages for automatic changelog generation
 - TypeScript strict mode is enforced
 - Test coverage should be maintained
+
+See [`.github/WORKFLOW.md`](.github/WORKFLOW.md) for detailed workflow documentation.
 
 ## 📄 License
 

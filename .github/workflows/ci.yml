@@ -1,12 +1,14 @@
 name: CI
 
 on:
+  # Only run CI on pull requests and feature branches
+  # No direct pushes to main allowed
   push:
-    branches:
-      - '**' # Runs on pushes to any branch
+    branches-ignore:
+      - main # Prevent direct pushes to main
   pull_request:
     branches:
-      - main # Runs on pull requests targeting the main branch
+      - main # Required for PR merges to main
 
 jobs:
   test:
