@@ -7,6 +7,7 @@ import { useStationsStore } from './stores/stations'
 import { useFavoritesStore } from './stores/favorites'
 import StationPanel from './components/StationPanel.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
+import PWAUpdateNotification from './components/PWAUpdateNotification.vue'
 import { useMap } from './composables/useMap'
 import { useGeolocationHandling } from './composables/useGeolocationHandling'
 import { usePerformanceMonitoring } from './composables/usePerformanceMonitoring'
@@ -66,6 +67,9 @@ const filteredStations = computed(() => {
   }
   return store.sortedStations
 })
+
+// App version for display
+const appVersion = computed(() => import.meta.env.VITE_APP_VERSION || '0.2.0')
 
 // Watch for changes in coordinates
 watch(
@@ -194,7 +198,10 @@ onUnmounted(() => {
       <!-- Main Content -->
       <div class="flex-1 overflow-y-auto p-4">
         <div class="flex justify-between items-center mb-4">
-          <h1 id="stations-heading" class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
+          <div class="flex items-baseline gap-2">
+            <h1 id="stations-heading" class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">v{{ appVersion }}</span>
+          </div>
           <button 
             v-if="coords.latitude && coords.longitude"
             @click="store.fetchNearbyStations(coords.latitude, coords.longitude)"
@@ -239,4 +246,7 @@ onUnmounted(() => {
       <BottomNav />
     </aside>
   </div>
+
+  <!-- PWA Update Notifications -->
+  <PWAUpdateNotification />
 </template>
