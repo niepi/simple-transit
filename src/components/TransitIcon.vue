@@ -26,8 +26,29 @@ const icon = computed(() => {
       return '🚊'
   }
 })
+
+const accessibleLabel = computed(() => {
+  switch (props.type.toLowerCase()) {
+    case 'sbahn':
+      return 'S-Bahn (suburban train)'
+    case 'ubahn':
+      return 'U-Bahn (subway)'
+    case 'tram':
+      return 'Tram'
+    case 'bus':
+      return 'Bus'
+    case 'ferry':
+      return 'Ferry'
+    case 'express':
+      return 'Express train'
+    case 'regional':
+      return 'Regional train'
+    default:
+      return 'Transit vehicle'
+  }
+})
 </script>
 
 <template>
-  <span role="img" :aria-label="type">{{ icon }}</span>
+  <span role="img" :aria-label="accessibleLabel">{{ icon }}</span>
 </template>
