@@ -151,7 +151,6 @@ export const useStationsStore = defineStore('stations', () => {
     } catch (e) {
       // Don't treat aborted requests as errors
       if (e instanceof Error && e.name === 'AbortError') {
-        console.log('Station request aborted')
         return
       }
       console.error('Error fetching stations:', e)
@@ -166,15 +165,7 @@ export const useStationsStore = defineStore('stations', () => {
   const DEPARTURE_DURATION = 30 // minutes
 
   async function fetchDepartures(stationId: string, force: boolean = false, loadMore: boolean = false) {
-    console.log('Store fetchDepartures:', {
-      stationId,
-      force,
-      loadMore,
-      currentDepartures: state.value.departures[stationId]?.length || 0,
-      maxDepartures: MAX_DEPARTURES.value
-    });
     if (!stationId?.trim()) {
-      console.error('No station ID provided')
       return
     }
 
@@ -262,11 +253,6 @@ export const useStationsStore = defineStore('stations', () => {
         .slice(0, MAX_DEPARTURES.value)
       
       // Update departures and cache
-      console.log('Processing departures:', {
-        total: mappedDepartures.length,
-        existing: state.value.departures[stationId]?.length || 0,
-        loadMore
-      });
 
       // Create a new array to trigger reactivity
       const newDepartures = [...mappedDepartures];
@@ -280,11 +266,7 @@ export const useStationsStore = defineStore('stations', () => {
           !existingDepartures.some(existing => existing.tripId === dep.tripId)
         )
 
-        console.log('Merging departures:', {
-          existing: existingDepartures.length,
-          new: uniqueDepartures.length,
-          total: existingDepartures.length + uniqueDepartures.length
-        });
+        // Merge existing and new departures
 
         // Create a new merged array and sort
         const allDepartures = [...existingDepartures, ...uniqueDepartures].sort((a, b) => {
@@ -299,10 +281,7 @@ export const useStationsStore = defineStore('stations', () => {
           [stationId]: allDepartures.slice(0, MAX_DEPARTURES.value * (loadMore ? 2 : 1))
         };
 
-        console.log('Final departures:', {
-          count: state.value.departures[stationId].length,
-          limit: MAX_DEPARTURES.value * (loadMore ? 2 : 1)
-        });
+        // Update completed
       } else {
         // Update state with new array for initial load
         state.value.departures = {
@@ -321,7 +300,6 @@ export const useStationsStore = defineStore('stations', () => {
     } catch (e) {
       // Don't treat aborted requests as errors
       if (e instanceof Error && e.name === 'AbortError') {
-        console.log(`Departures request aborted for station ${stationId}`)
         return
       }
       departureControllers.delete(stationId)
