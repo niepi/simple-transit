@@ -34,7 +34,7 @@
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.4.0",
     "autoprefixer": "^10.4.14",
-    "glob": "^10.3.10",
+    "glob": "^11.0.3",
     "jsdom": "^26.1.0",
     "lru-cache": "^11.1.0",
     "postcss": "^8.4.27",
