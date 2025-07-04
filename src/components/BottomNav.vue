@@ -12,7 +12,7 @@ console.log('[BottomNav] Template structure:', document.querySelector('nav.fixed
 </script>
 
 <template>
-  <div class="bg-white dark:bg-dark-card border-t border-gray-200 dark:border-dark-hover p-2 md:p-4 transition-colors">
+  <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-2 md:p-4 transition-colors">
     <nav class="w-full max-w-sm mx-auto bg-blue-500 dark:bg-blue-600 rounded-lg shadow-lg overflow-hidden transition-colors">
       <div class="flex">
         <button

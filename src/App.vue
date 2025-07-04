@@ -331,19 +331,19 @@ onUnmounted(() => {
       <!-- Dark mode toggle -->
       <button
         @click="isDark = !isDark"
-        class="p-2 rounded-full bg-white dark:bg-dark-card shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover"
+        class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all dark:hover:bg-gray-700"
         :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
       >
         <component
           :is="isDark ? SunIcon : MoonIcon"
-          class="w-5 h-5 text-gray-600 dark:text-dark"
+          class="w-5 h-5 text-gray-600 dark:text-gray-300"
         />
       </button>
       
       <!-- Clear localStorage -->
       <button
         @click="clearLocalStorage"
-        class="p-2 rounded-full bg-white dark:bg-dark-card shadow-md hover:shadow-lg transition-all dark:hover:bg-dark-hover hover:bg-red-50 dark:hover:bg-red-900/20"
+        class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all dark:hover:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
         title="Clear local storage and reset app"
       >
         <TrashIcon class="w-5 h-5 text-red-500" />
@@ -359,7 +359,7 @@ onUnmounted(() => {
       <!-- Center Indicator -->
       <div v-if="!isMapCentered" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[9999]">
         <div class="relative">
-          <div class="w-6 h-6 rounded-full bg-white/90 dark:bg-dark-card/90 shadow-lg flex items-center justify-center">
+          <div class="w-6 h-6 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-lg flex items-center justify-center">
             <div class="w-4 h-4 rounded-full bg-emerald-500 animate-pulse"></div>
           </div>
         </div>
