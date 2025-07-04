@@ -21,6 +21,10 @@ npm run preview      # Preview production build
 npm run test         # Run tests with Vitest
 npm run coverage     # Generate test coverage report
 npx vitest run       # Run tests once (CI mode)
+
+# UI Rendering Tests (for dependency validation)
+npm run test -- --run src/ui-rendering.spec.ts
+npm run test -- --run src/dependency-validation.spec.ts
 ```
 
 ### Type Checking
@@ -126,6 +130,12 @@ src/
 - Component tests use `@vue/test-utils`
 - Test files follow `.spec.ts` naming convention
 - Coverage reports generated in `coverage/` directory
+
+### UI Rendering Tests
+Critical tests that verify UI renders correctly after dependency updates:
+- `src/ui-rendering.spec.ts` - Tests component rendering and CSS framework integration
+- `src/dependency-validation.spec.ts` - Validates framework compatibility after updates
+- These tests catch breaking changes in Tailwind CSS, Vue, Vite, and other dependencies
 
 ## Styling
 - **Tailwind CSS** for utility-first styling

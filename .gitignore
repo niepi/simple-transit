@@ -38,3 +38,6 @@ coverage
 
 # Vite
 .vite/
+
+# Claude Code local files
+.claude/
