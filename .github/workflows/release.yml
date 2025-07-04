@@ -69,37 +69,40 @@ jobs:
             const isPrerelease = /-(alpha|beta|rc|pre)/i.test(tag);
             
             try {
+              // Create release body with proper escaping
+              const releaseBody = `## Changes in ${tag}
+
+              ${{ env.CHANGELOG }}
+
+              ---
+
+              ## 📦 Container Image
+              The container image for this release is available at:
+              \`\`\`bash
+              docker pull ghcr.io/${owner}/${repo}:${tag}
+              docker pull ghcr.io/${owner}/${repo}:latest
+              \`\`\`
+
+              ## 🚀 Quick Start
+              \`\`\`bash
+              # Run with Docker
+              docker run -p 8080:80 ghcr.io/${owner}/${repo}:${tag}
+
+              # Or install as PWA
+              # Visit the app URL and click "Install" or "Add to Home Screen"
+              \`\`\`
+
+              ## 🔗 Links
+              - [Container Images](https://github.com/${owner}/${repo}/pkgs/container/${repo})
+              - [Documentation](https://github.com/${owner}/${repo}#readme)
+              - [Workflow Documentation](https://github.com/${owner}/${repo}/blob/main/.github/WORKFLOW.md)`;
+
               const release = await github.rest.repos.createRelease({
                 owner,
                 repo,
                 tag_name: tag,
                 name: `Release ${tag}`,
-                body: `## Changes in ${tag}
-
-${{ env.CHANGELOG }}
-
----
-
-## 📦 Container Image
-The container image for this release is available at:
-\`\`\`bash
-docker pull ghcr.io/${owner}/${repo}:${tag}
-docker pull ghcr.io/${owner}/${repo}:latest
-\`\`\`
-
-## 🚀 Quick Start
-\`\`\`bash
-# Run with Docker
-docker run -p 8080:80 ghcr.io/${owner}/${repo}:${tag}
-
-# Or install as PWA
-# Visit the app URL and click "Install" or "Add to Home Screen"
-\`\`\`
-
-## 🔗 Links
-- [Container Images](https://github.com/${owner}/${repo}/pkgs/container/${repo})
-- [Documentation](https://github.com/${owner}/${repo}#readme)
-- [Workflow Documentation](https://github.com/${owner}/${repo}/blob/main/.github/WORKFLOW.md)`,
+                body: releaseBody,
                 draft: false,
                 prerelease: isPrerelease,
                 generate_release_notes: false
