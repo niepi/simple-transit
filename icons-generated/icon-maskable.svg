@@ -1,0 +1,30 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Full bleed background for maskable -->
+  <rect width="512" height="512" fill="#1e3a8a"/>
+  
+  <!-- U-Bahn symbol -->
+  <circle cx="200" cy="220" r="35" fill="#f59e0b" stroke="white" stroke-width="3"/>
+  <text x="200" y="235" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="36" font-weight="bold">U</text>
+  
+  <!-- S-Bahn symbol -->
+  <circle cx="312" cy="220" r="35" fill="#16a34a" stroke="white" stroke-width="3"/>
+  <text x="312" y="235" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="36" font-weight="bold">S</text>
+  
+  <!-- Simplified bus symbol -->
+  <rect x="210" y="280" width="92" height="50" rx="8" fill="#dc2626" stroke="white" stroke-width="3"/>
+  <rect x="220" y="290" width="15" height="12" rx="2" fill="white" opacity="0.9"/>
+  <rect x="240" y="290" width="15" height="12" rx="2" fill="white" opacity="0.9"/>
+  <rect x="260" y="290" width="15" height="12" rx="2" fill="white" opacity="0.9"/>
+  <rect x="280" y="290" width="15" height="12" rx="2" fill="white" opacity="0.9"/>
+  <circle cx="230" cy="320" r="5" fill="white"/>
+  <circle cx="282" cy="320" r="5" fill="white"/>
+  
+  <!-- Transit lines -->
+  <line x1="160" y1="360" x2="352" y2="360" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="160" y1="375" x2="352" y2="375" stroke="#16a34a" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <line x1="160" y1="390" x2="352" y2="390" stroke="#dc2626" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  
+  <!-- Location pin -->
+  <path d="M256 140 C270 140 282 152 282 166 C282 184 256 210 256 210 S230 184 230 166 C230 152 242 140 256 140 Z" fill="white"/>
+  <circle cx="256" cy="166" r="8" fill="#1e3a8a"/>
+</svg>

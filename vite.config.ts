@@ -4,10 +4,29 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 import Icons from 'unplugin-icons/vite'
 import { readFileSync } from 'fs'
+import { execSync } from 'child_process'
 
-// Read version from package.json for cache versioning
-const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'))
-const version = packageJson.version
+// Get version from git tags for cache versioning
+function getVersionFromGit() {
+  try {
+    // Get the latest git tag
+    const version = execSync('git describe --tags --abbrev=0 2>/dev/null', { encoding: 'utf8' }).trim()
+    
+    // Remove 'v' prefix if present (e.g., v1.2.3 -> 1.2.3)
+    return version.startsWith('v') ? version.slice(1) : version
+  } catch (error) {
+    // If no tags exist or git command fails, use commit hash
+    try {
+      const shortHash = execSync('git rev-parse --short HEAD 2>/dev/null', { encoding: 'utf8' }).trim()
+      return `dev-${shortHash}`
+    } catch (hashError) {
+      // Fallback for non-git environments
+      return 'dev-unknown'
+    }
+  }
+}
+
+const version = getVersionFromGit()
 
 // https://vitejs.dev/config/
 export default defineConfig({
