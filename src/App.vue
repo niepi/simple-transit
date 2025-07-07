@@ -11,6 +11,7 @@ import PWAUpdateNotification from './components/PWAUpdateNotification.vue'
 import { useMap } from './composables/useMap'
 import { useGeolocationHandling } from './composables/useGeolocationHandling'
 import { usePerformanceMonitoring } from './composables/usePerformanceMonitoring'
+import { useRuntimeEnv } from './composables/useRuntimeEnv'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -68,13 +69,8 @@ const filteredStations = computed(() => {
   return store.sortedStations
 })
 
-// App version for display
-const appVersion = computed(() => {
-  // Try environment variable first, then fallback to defined constant, then 'dev'
-  return import.meta.env.VITE_APP_VERSION || 
-         (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : null) || 
-         'dev'
-})
+// Use runtime environment composable for version and other env vars
+const { appVersion, appName, appDescription } = useRuntimeEnv()
 
 // Watch for changes in coordinates
 watch(
@@ -205,7 +201,7 @@ onUnmounted(() => {
         <div class="flex justify-between items-center mb-4">
           <div class="flex items-baseline gap-2">
             <h1 id="stations-heading" class="text-2xl font-bold text-gray-900 dark:text-white">Nearby Stations</h1>
-            <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">v{{ appVersion }}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ appVersion }}</span>
           </div>
           <button 
             v-if="coords.latitude && coords.longitude"

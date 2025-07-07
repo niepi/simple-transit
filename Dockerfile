@@ -24,13 +24,17 @@ FROM nginx:1.29-alpine
 # Copy built files and config
 COPY --from=builder /app/dist /usr/share/nginx/html/
 COPY nginx-custom.conf /etc/nginx/nginx.conf
+COPY scripts/inject-runtime-env.sh /usr/local/bin/inject-runtime-env.sh
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # Configure nginx and permissions
 RUN mkdir -p /tmp && \
     chown -R nginx:nginx /tmp /var/cache/nginx /usr/share/nginx/html && \
-    chmod -R 755 /tmp /var/cache/nginx /usr/share/nginx/html
+    chmod -R 755 /tmp /var/cache/nginx /usr/share/nginx/html && \
+    chmod +x /usr/local/bin/inject-runtime-env.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 80
 
 USER nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

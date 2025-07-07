@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  transit-test:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_APP_VERSION=v0.5.2
+      - VITE_APP_NAME=Berlin Transit Map (Docker)
+      - VITE_APP_DESCRIPTION=Real-time Berlin transit with runtime env support
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
