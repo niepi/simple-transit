@@ -41,7 +41,9 @@ const newVersionLine = `VITE_APP_VERSION=${version}`
 if (versionRegex.test(envContent)) {
   envContent = envContent.replace(versionRegex, newVersionLine)
 } else {
-  envContent = envContent.trim() + '\n' + newVersionLine + '\n'
+  // Add version with comment if creating new .env file
+  const versionBlock = `# App version for PWA cache versioning (updated by scripts/update-version.js)\n${newVersionLine}\n`
+  envContent = envContent.trim() + '\n' + versionBlock
 }
 
 writeFileSync(envPath, envContent)
