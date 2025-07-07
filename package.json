@@ -17,7 +17,7 @@
     "@headlessui/vue": "^1.7.16",
     "@heroicons/vue": "^2.2.0",
     "@types/leaflet": "^1.9.19",
-    "@vueuse/core": "^10.11.1",
+    "@vueuse/core": "^13.5.0",
     "element-plus": "^2.10.2",
     "leaflet": "^1.9.4",
     "pinia": "^3.0.3",
