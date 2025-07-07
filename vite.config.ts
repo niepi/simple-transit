@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
@@ -29,7 +29,15 @@ function getVersionFromGit() {
 const version = getVersionFromGit()
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command, mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  const env = loadEnv(mode, process.cwd(), '')
+  
+  // Ensure version is updated when config is loaded
+  console.log(`🔄 Vite config loaded in ${mode} mode`)
+  console.log(`📦 Current version from env: ${env.VITE_APP_VERSION || 'not found'}`)
+  
+  return {
   plugins: [
     Icons({
       compiler: 'vue3',
@@ -161,5 +169,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['vue', 'pinia', '@vueuse/core', 'leaflet']
+  },
+  
+  // Ensure environment variables are properly defined
+  define: {
+    __APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION || version)
+  }
   }
 })

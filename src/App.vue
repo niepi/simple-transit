@@ -69,7 +69,12 @@ const filteredStations = computed(() => {
 })
 
 // App version for display
-const appVersion = computed(() => import.meta.env.VITE_APP_VERSION || 'dev')
+const appVersion = computed(() => {
+  // Try environment variable first, then fallback to defined constant, then 'dev'
+  return import.meta.env.VITE_APP_VERSION || 
+         (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : null) || 
+         'dev'
+})
 
 // Watch for changes in coordinates
 watch(

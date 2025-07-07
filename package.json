@@ -9,7 +9,11 @@
     "type-check": "vue-tsc",
     "preview": "vite preview",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
@@ -27,7 +31,8 @@
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.2",
     "@jridgewell/sourcemap-codec": "^1.4.15",
-    "@types/node": "24.0.10",
+    "@playwright/test": "^1.53.2",
+    "@types/node": "^24.0.10",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vitest/coverage-v8": "^3.2.4",
     "@vue/test-utils": "^2.4.6",

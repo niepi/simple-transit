@@ -1,0 +1,20 @@
+<testsuites id="" name="" tests="1" failures="1" skipped="0" errors="0" time="0.331537">
+<testsuite name="journeys/version-debug.spec.ts" timestamp="2025-07-07T13:23:03.005Z" hostname="chromium" tests="1" failures="1" skipped="0" time="0.001" errors="0">
+<testcase name="Debug Version Display Issue" classname="journeys/version-debug.spec.ts" time="0.001">
+<failure message="version-debug.spec.ts:3:1 Debug Version Display Issue" type="FAILURE">
+<![CDATA[  [chromium] › journeys/version-debug.spec.ts:3:1 › Debug Version Display Issue ────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/niepi/Library/Caches/ms-playwright/chromium_headless_shell-1179/chrome-mac/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+</testsuite>
+</testsuites>

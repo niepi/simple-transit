@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Environment Debug</title>
+</head>
+<body>
+    <h1>Environment Variables Debug</h1>
+    <div id="env-info">Loading...</div>
+    
+    <script type="module">
+        const envInfo = document.getElementById('env-info');
+        
+        try {
+            envInfo.innerHTML = `
+                <h2>Environment Variables:</h2>
+                <p><strong>VITE_APP_VERSION:</strong> ${import.meta.env.VITE_APP_VERSION || 'NOT FOUND'}</p>
+                <p><strong>VITE_APP_NAME:</strong> ${import.meta.env.VITE_APP_NAME || 'NOT FOUND'}</p>
+                <p><strong>MODE:</strong> ${import.meta.env.MODE || 'NOT FOUND'}</p>
+                <p><strong>DEV:</strong> ${import.meta.env.DEV || 'NOT FOUND'}</p>
+                
+                <h2>All Environment Variables:</h2>
+                <pre>${JSON.stringify(import.meta.env, null, 2)}</pre>
+            `;
+        } catch (error) {
+            envInfo.innerHTML = `<p>Error: ${error.message}</p>`;
+        }
+    </script>
+</body>
+</html>
