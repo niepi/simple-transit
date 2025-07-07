@@ -1,0 +1,54 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="90" fill="#1e3a8a"/>
+  
+  <!-- Berlin Brandenburg Gate silhouette (simplified) in background -->
+  <g opacity="0.15" fill="white">
+    <rect x="180" y="100" width="8" height="120"/>
+    <rect x="200" y="100" width="8" height="120"/>
+    <rect x="220" y="100" width="8" height="120"/>
+    <rect x="240" y="100" width="8" height="120"/>
+    <rect x="260" y="100" width="8" height="120"/>
+    <rect x="280" y="100" width="8" height="120"/>
+    <rect x="300" y="100" width="8" height="120"/>
+    <rect x="320" y="100" width="8" height="120"/>
+    <rect x="324" y="100" width="8" height="120"/>
+    <rect x="170" y="85" width="180" height="25" rx="5"/>
+    <rect x="210" y="65" width="100" height="25" rx="3"/>
+  </g>
+  
+  <!-- U-Bahn (Underground) symbol -->
+  <circle cx="180" cy="200" r="45" fill="#f59e0b" stroke="white" stroke-width="4"/>
+  <text x="180" y="220" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">U</text>
+  
+  <!-- S-Bahn (City train) symbol -->
+  <circle cx="332" cy="200" r="45" fill="#16a34a" stroke="white" stroke-width="4"/>
+  <text x="332" y="220" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">S</text>
+  
+  <!-- Bus symbol -->
+  <rect x="180" y="300" width="152" height="80" rx="12" fill="#dc2626" stroke="white" stroke-width="4"/>
+  <rect x="195" y="315" width="25" height="20" rx="3" fill="white" opacity="0.9"/>
+  <rect x="230" y="315" width="25" height="20" rx="3" fill="white" opacity="0.9"/>
+  <rect x="265" y="315" width="25" height="20" rx="3" fill="white" opacity="0.9"/>
+  <rect x="300" y="315" width="25" height="20" rx="3" fill="white" opacity="0.9"/>
+  <circle cx="205" cy="365" r="8" fill="white"/>
+  <circle cx="307" cy="365" r="8" fill="white"/>
+  <rect x="190" y="345" width="132" height="12" rx="6" fill="white" opacity="0.3"/>
+  
+  <!-- Tram lines (stylized) -->
+  <line x1="100" y1="420" x2="412" y2="420" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+  <line x1="100" y1="440" x2="412" y2="440" stroke="#16a34a" stroke-width="6" stroke-linecap="round"/>
+  <line x1="100" y1="460" x2="412" y2="460" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Location pin for Berlin -->
+  <path d="M256 80 C276 80 292 96 292 116 C292 140 256 180 256 180 S220 140 220 116 C220 96 236 80 256 80 Z" fill="white"/>
+  <circle cx="256" cy="116" r="12" fill="#1e3a8a"/>
+  
+  <!-- Connecting dots pattern -->
+  <circle cx="150" cy="250" r="3" fill="white" opacity="0.6"/>
+  <circle cx="362" cy="250" r="3" fill="white" opacity="0.6"/>
+  <circle cx="256" cy="260" r="3" fill="white" opacity="0.6"/>
+  <line x1="150" y1="250" x2="180" y2="235" stroke="white" stroke-width="2" opacity="0.4"/>
+  <line x1="362" y1="250" x2="332" y2="235" stroke="white" stroke-width="2" opacity="0.4"/>
+  <line x1="256" y1="260" x2="256" y2="300" stroke="white" stroke-width="2" opacity="0.4"/>
+</svg>

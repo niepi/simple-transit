@@ -1,0 +1,30 @@
+<svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with iOS rounded corners -->
+  <rect width="180" height="180" rx="40" fill="#1e3a8a"/>
+  
+  <!-- U-Bahn symbol -->
+  <circle cx="63" cy="70" r="16" fill="#f59e0b" stroke="white" stroke-width="1.5"/>
+  <text x="63" y="78" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">U</text>
+  
+  <!-- S-Bahn symbol -->
+  <circle cx="117" cy="70" r="16" fill="#16a34a" stroke="white" stroke-width="1.5"/>
+  <text x="117" y="78" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">S</text>
+  
+  <!-- Bus symbol -->
+  <rect x="63" y="105" width="54" height="28" rx="4" fill="#dc2626" stroke="white" stroke-width="1.5"/>
+  <rect x="68" y="110" width="8" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="80" y="110" width="8" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="92" y="110" width="8" height="6" rx="1" fill="white" opacity="0.9"/>
+  <rect x="104" y="110" width="8" height="6" rx="1" fill="white" opacity="0.9"/>
+  <circle cx="75" cy="128" r="3" fill="white"/>
+  <circle cx="105" cy="128" r="3" fill="white"/>
+  
+  <!-- Transit lines -->
+  <line x1="40" y1="145" x2="140" y2="145" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <line x1="40" y1="152" x2="140" y2="152" stroke="#16a34a" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <line x1="40" y1="159" x2="140" y2="159" stroke="#dc2626" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  
+  <!-- Location pin -->
+  <path d="M90 30 C98 30 104 36 104 44 C104 54 90 70 90 70 S76 54 76 44 C76 36 82 30 90 30 Z" fill="white"/>
+  <circle cx="90" cy="44" r="4" fill="#1e3a8a"/>
+</svg>
