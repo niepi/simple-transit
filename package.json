@@ -16,7 +16,7 @@
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.1.0",
+    "@element-plus/icons-vue": "^2.3.2",
     "@headlessui/vue": "^1.7.16",
     "@heroicons/vue": "^2.2.0",
     "@types/leaflet": "^1.9.20",
