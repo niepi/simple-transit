@@ -42,7 +42,7 @@
     "jsdom": "^26.1.0",
     "lru-cache": "^11.2.1",
     "postcss": "^8.4.27",
-    "tailwindcss": "^4.1.12",
+    "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "undici-types": "7.15.0",
     "unplugin-icons": "^22.2.0",
