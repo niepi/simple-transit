@@ -166,13 +166,12 @@ test.describe('Critical State Management - Deepest Layer Issues', () => {
     const envState = await page.evaluate(() => {
       return {
         // Check if Vite injects environment variables
-        hasImportMeta: typeof import !== 'undefined' && 
-          typeof import.meta !== 'undefined',
+        hasImportMeta: typeof import.meta !== 'undefined',
         // Check for version specifically
-        viteAppVersion: typeof import !== 'undefined' && 
+        viteAppVersion: typeof import.meta !== 'undefined' &&
           import.meta?.env?.VITE_APP_VERSION,
         // Check for other env vars
-        viteAppName: typeof import !== 'undefined' && 
+        viteAppName: typeof import.meta !== 'undefined' &&
           import.meta?.env?.VITE_APP_NAME,
         // Check global objects
         globalEnv: (window as any).__ENV__ || 'not found',

@@ -132,11 +132,9 @@ function createFetchResponse(data: unknown, ok = true, status = 200) {
 }
 
 
-// Skip these tests in GitHub Actions due to component mounting issues in JSDOM environment
-const isGitHubActions = process.env.GITHUB_ACTIONS === 'true'
-const describeOrSkip = isGitHubActions ? describe.skip : describe
+// Tests now stable with improved cleanup - no need to skip in GitHub Actions
 
-describeOrSkip('StationPanel.vue', () => {
+describe('StationPanel.vue', () => {
   let pinia: Pinia
   let stationsStore: ReturnType<typeof useStationsStore>
   let favoritesStore: ReturnType<typeof useFavoritesStore>

@@ -1,6 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-sbahn: #008C4C;
+  --color-ubahn: #0067B3;
+  --color-tram: #DC0000;
+  --color-bus: #7A28A3;
+  --color-ferry: #00B7E5;
+  --color-express: #FFC107;
+  --color-regional: #3F51B5;
+}
 
 @layer base {
   :root {
