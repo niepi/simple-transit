@@ -3,6 +3,11 @@ FROM node:24.8-alpine AS builder
 
 WORKDIR /app
 
+# Update Alpine packages to fix security vulnerabilities in build stage
+RUN apk update && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/*
+
 # Install dependencies and build
 COPY package*.json ./
 COPY tsconfig*.json ./
@@ -26,6 +31,11 @@ COPY --from=builder /app/dist /usr/share/nginx/html/
 COPY nginx-custom.conf /etc/nginx/nginx.conf
 COPY scripts/inject-runtime-env.sh /usr/local/bin/inject-runtime-env.sh
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+# Update Alpine packages to fix security vulnerabilities
+RUN apk update && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/*
 
 # Configure nginx and permissions
 RUN mkdir -p /tmp && \
