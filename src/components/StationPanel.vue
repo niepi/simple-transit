@@ -3,7 +3,9 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useStationsStore } from '../stores/stations'
 import { useFavoritesStore } from '../stores/favorites'
 import { usePreferencesStore } from '../stores/preferences'
-import type { Station, TransitType } from '../types'
+import { normalizeTransitType } from '../stores/helpers'
+import type { Station } from '../types'
+import type { TransitType } from '../types/preferences'
 // import type { TagProps } from 'element-plus' // Keep commented for now
 import TransitIcon from './TransitIcon.vue'
 import TransitFilter from './TransitFilter.vue'
@@ -50,10 +52,8 @@ const stationDepartures = computed(() => { // Restore full logic
   return filtered
 })
 
-const transitTypeMap = { /* ... */ } as const // Restore (copied from original for brevity)
-function getTransitType(product: string): TransitType { // Restore
-  const type = product?.toLowerCase()?.trim() || ''
-  return transitTypeMap[type as keyof typeof transitTypeMap] || 'bus' // Default to bus if not found in map
+function getTransitType(product: string): TransitType {
+  return normalizeTransitType(product)
 }
 
 function getTransitColor(type: TransitType): string { // Restore

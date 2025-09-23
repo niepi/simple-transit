@@ -8,12 +8,15 @@ export interface UserLocation {
 export interface Station {
   id: string
   name: string
-  type: string
+  lines?: any[]
   location: {
-    type: string
     latitude: number
     longitude: number
+    altitude: number | null
   }
+  notes?: string | null
+  type: string
+  slug?: string
   distance?: number
 }
 
@@ -27,8 +30,9 @@ export interface Trip {
   }
   direction: string
   platform?: string
+  when?: string | null
   plannedWhen: string
-  delay?: number
+  delay?: number | null
   cancelled?: boolean
 }
 

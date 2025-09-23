@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll, afterEach, afterAll } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import StationPanel from './StationPanel.vue'
@@ -65,9 +65,15 @@ beforeAll(() => {
   vi.useFakeTimers()
 })
 
+afterAll(() => {
+  vi.useRealTimers()
+})
+
 afterEach(() => {
   vi.clearAllTimers()
-  vi.mocked(fetch).mockReset() 
+  vi.mocked(fetch).mockReset()
+  // Clean up any DOM elements to prevent nextSibling errors
+  document.body.innerHTML = ''
 })
 
 // --- Test Data ---
@@ -135,6 +141,16 @@ describeOrSkip('StationPanel.vue', () => {
   let stationsStore: ReturnType<typeof useStationsStore>
   let favoritesStore: ReturnType<typeof useFavoritesStore>
   let preferencesStore: ReturnType<typeof usePreferencesStore>
+  const mountedWrappers: any[] = []
+
+  function createWrapper(props: any) {
+    const wrapper = mount(StationPanel, {
+      props,
+      global: { plugins: [pinia] },
+    })
+    mountedWrappers.push(wrapper)
+    return wrapper
+  }
 
   beforeEach(async () => {
     pinia = createPinia()
@@ -144,19 +160,19 @@ describeOrSkip('StationPanel.vue', () => {
     favoritesStore = useFavoritesStore()
     preferencesStore = usePreferencesStore()
 
-    stationsStore.clearStations() 
-    favoritesStore.favoriteIds = [] 
+    stationsStore.clearStations()
+    favoritesStore.favoriteIds = []
     preferencesStore.resetPreferences()
-    
+
     preferencesStore.preferences.enabledTransitTypes = ['sbahn', 'ubahn', 'tram', 'bus', 'ferry', 'express', 'regional']
     preferencesStore.preferences.maxDepartures = 5
 
     // Spies - generally allow original implementation unless specifically mocked per test
     vi.spyOn(stationsStore, 'fetchDepartures')
     vi.spyOn(favoritesStore, 'toggleFavorite')
-    vi.spyOn(favoritesStore, 'setActiveView') 
+    vi.spyOn(favoritesStore, 'setActiveView')
     vi.spyOn(preferencesStore, 'updatePreference')
-    
+
     // Default fetch mock for departures. Tests can override this.
     vi.mocked(fetch).mockImplementation(async (url): Promise<any> => {
       if (typeof url === 'string' && url.includes(`/stops/${mockStation.id}/departures`)) {
@@ -166,11 +182,22 @@ describeOrSkip('StationPanel.vue', () => {
     });
   })
 
-  it('renders station name', async () => {
-    const wrapper = mount(StationPanel, {
-      props: { station: mockStation },
-      global: { plugins: [pinia] },
+  afterEach(() => {
+    // Unmount all mounted wrappers to prevent memory leaks and DOM conflicts
+    mountedWrappers.forEach(wrapper => {
+      if (wrapper && typeof wrapper.unmount === 'function') {
+        try {
+          wrapper.unmount()
+        } catch (e) {
+          // Ignore unmount errors
+        }
+      }
     })
+    mountedWrappers.length = 0
+  })
+
+  it('renders station name', async () => {
+    const wrapper = createWrapper({ station: mockStation })
     await flushPromises() // Allow onMounted and fetch to complete
     expect(wrapper.find('h2').text()).toBe(mockStation.name)
   })
@@ -178,21 +205,15 @@ describeOrSkip('StationPanel.vue', () => {
   describe('Favorite Toggle', () => {
     it('displays an outline star if station is not favorite', async () => {
       favoritesStore.favoriteIds = []
-      const wrapper = mount(StationPanel, {
-        props: { station: mockStation },
-        global: { plugins: [pinia] },
-      })
+      const wrapper = createWrapper({ station: mockStation })
       await flushPromises()
       expect(wrapper.findComponent({ name: 'StarIconOutline' }).exists()).toBe(true)
       expect(wrapper.findComponent({ name: 'StarIconSolid' }).exists()).toBe(false)
     })
 
     it('displays a solid star if station is favorite', async () => {
-      favoritesStore.favoriteIds = [mockStation.id] 
-      const wrapper = mount(StationPanel, {
-        props: { station: mockStation },
-        global: { plugins: [pinia] },
-      })
+      favoritesStore.favoriteIds = [mockStation.id]
+      const wrapper = createWrapper({ station: mockStation })
       await flushPromises()
       expect(wrapper.findComponent({ name: 'StarIconSolid' }).exists()).toBe(true)
       expect(wrapper.findComponent({ name: 'StarIconOutline' }).exists()).toBe(false)
@@ -212,20 +233,14 @@ describeOrSkip('StationPanel.vue', () => {
   describe('TransitFilter visibility', () => {
     it('shows TransitFilter when activeView is "favorites"', async () => {
       favoritesStore.activeView = 'favorites' // Set directly as it's a computed property
-      const wrapper = mount(StationPanel, {
-        props: { station: mockStation },
-        global: { plugins: [pinia] },
-      })
+      const wrapper = createWrapper({ station: mockStation })
       await flushPromises()
       expect(wrapper.findComponent({ name: 'TransitFilter' }).exists()).toBe(true)
     })
 
     it('hides TransitFilter when activeView is not "favorites"', async () => {
       favoritesStore.activeView = 'all'
-      const wrapper = mount(StationPanel, {
-        props: { station: mockStation },
-        global: { plugins: [pinia] },
-      })
+      const wrapper = createWrapper({ station: mockStation })
       await flushPromises()
       expect(wrapper.findComponent({ name: 'TransitFilter' }).exists()).toBe(false)
     })
@@ -236,12 +251,9 @@ describeOrSkip('StationPanel.vue', () => {
       const neverResolves = new Promise<void>(() => {});
       vi.mocked(fetch).mockImplementationOnce(async () => neverResolves); // Override global fetch for this test
 
-      const wrapper = mount(StationPanel, {
-          props: { station: mockStation },
-          global: { plugins: [pinia] },
-      });
+      const wrapper = createWrapper({ station: mockStation })
       await flushPromises(); // Initial render cycle
-      
+
       expect(wrapper.text()).toContain('Loading departures...');
       // Clean up by allowing the promise to resolve if necessary or ensure test ends.
       // In this case, fake timers might need careful handling if the promise has timeouts.
@@ -249,11 +261,8 @@ describeOrSkip('StationPanel.vue', () => {
 
     it('displays "No departures" message if stationDepartures is empty and not loading', async () => {
       vi.mocked(fetch).mockImplementationOnce(async () => createFetchResponse({ departures: [] }));
-      const wrapper = mount(StationPanel, {
-        props: { station: mockStation },
-        global: { plugins: [pinia] },
-      })
-      await flushPromises() 
+      const wrapper = createWrapper({ station: mockStation })
+      await flushPromises()
       expect(wrapper.text()).toContain('No departures in the next 30 minutes')
       expect(wrapper.text()).not.toContain('Loading departures...')
     })
@@ -356,17 +365,14 @@ describeOrSkip('StationPanel.vue', () => {
   
   describe('Automatic Refresh Interval', () => {
     it('calls fetchDepartures periodically', async () => {
-      mount(StationPanel, { 
-        props: { station: mockStation },
-        global: { plugins: [pinia] },
-      })
+      const wrapper = createWrapper({ station: mockStation })
       await flushPromises()
       expect(stationsStore.fetchDepartures).toHaveBeenCalledTimes(1)
       expect(stationsStore.fetchDepartures).toHaveBeenLastCalledWith(mockStation.id, false, false)
 
       vi.advanceTimersByTime(60000) // REFRESH_INTERVAL
       await flushPromises()
-      expect(stationsStore.fetchDepartures).toHaveBeenCalledTimes(2) 
+      expect(stationsStore.fetchDepartures).toHaveBeenCalledTimes(2)
       expect(stationsStore.fetchDepartures).toHaveBeenLastCalledWith(mockStation.id, false, false)
 
       vi.advanceTimersByTime(60000)
