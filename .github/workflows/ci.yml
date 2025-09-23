@@ -1,14 +1,17 @@
 name: CI
 
 on:
-  # Only run CI on pull requests and feature branches
-  # No direct pushes to main allowed
+  # Run CI on pull requests, feature branches, and main branch
   push:
-    branches-ignore:
-      - main # Prevent direct pushes to main
+    branches:
+      - main
+      - 'feature/**'
+      - 'fix/**'
+      - 'hotfix/**'
   pull_request:
     branches:
       - main # Required for PR merges to main
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   test:
@@ -29,7 +32,7 @@ jobs:
         run: npm run lint --if-present
 
       - name: Run type checking
-        run: npm run typecheck --if-present
+        run: npm run type-check --if-present
 
       - name: Run tests
         run: npm test
