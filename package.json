@@ -33,7 +33,7 @@
     "@jridgewell/sourcemap-codec": "^1.5.5",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.17",
-    "@types/node": "^24.10.0",
+    "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitest/coverage-v8": "^4.0.8",
     "@vue/test-utils": "^2.4.6",
