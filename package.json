@@ -24,7 +24,7 @@
     "element-plus": "^2.11.8",
     "leaflet": "^1.9.4",
     "pinia": "^3.0.4",
-    "vite-plugin-pwa": "^1.1.0",
+    "vite-plugin-pwa": "^1.2.0",
     "vue": "^3.5.25",
     "vue-router": "^4.6.3"
   },
