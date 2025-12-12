@@ -43,7 +43,7 @@
     "jsdom": "^27.3.0",
     "lru-cache": "^11.2.4",
     "postcss": "^8.4.27",
-    "tailwindcss": "^4.1.17",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "undici-types": "7.16.0",
     "unplugin-icons": "^22.5.0",
