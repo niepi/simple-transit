@@ -2,10 +2,10 @@
 
 A modern **Progressive Web Application** for Berlin public transit, showing nearby stations and real-time departures on an interactive map. Built for speed, reliability, and offline use.
 
-![Version](https://img.shields.io/github/v/release/niepi/simple-transit-vue)
-![License](https://img.shields.io/github/license/niepi/simple-transit-vue)
-![CI](https://img.shields.io/github/actions/workflow/status/niepi/simple-transit-vue/ci.yml)
-![Container](https://img.shields.io/badge/container-ghcr.io-blue)
+![Version](https://img.shields.io/github/v/release/niepi/simple-transit)
+![License](https://img.shields.io/github/license/niepi/simple-transit)
+![CI](https://img.shields.io/github/actions/workflow/status/niepi/simple-transit/ci.yml)
+![Container](https://img.shields.io/badge/container-registry.niepi.org-blue)
 
 ## ✨ Features
 
@@ -35,7 +35,7 @@ Visit [http://localhost:5173](http://localhost:5173) to see your app.
 
 ```bash
 # Run pre-built container
-docker run -p 8080:80 ghcr.io/niepi/simple-transit-vue:latest
+docker run -p 8080:80 registry.niepi.org/simple-transit:latest
 
 # Or build locally
 docker build -t simple-transit .
@@ -133,10 +133,10 @@ git push origin v1.2.0  # Triggers container build
 Released containers are available at:
 ```bash
 # Latest release
-ghcr.io/niepi/simple-transit-vue:latest
+registry.niepi.org/simple-transit:latest
 
 # Specific version  
-ghcr.io/niepi/simple-transit-vue:v1.2.0
+registry.niepi.org/simple-transit:v1.2.0
 ```
 
 ### Manual Version Updates

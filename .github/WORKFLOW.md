@@ -67,8 +67,8 @@ git push origin v1.2.0
 4. 📦 **Container push** - Push to GitHub Container Registry
 
 **Available at:**
-- `ghcr.io/[owner]/[repo]:v1.2.0` (specific version)
-- `ghcr.io/[owner]/[repo]:latest` (latest tag)
+- `registry.niepi.org/simple-transit:v1.2.0` (specific version)
+- `registry.niepi.org/simple-transit:latest` (latest tag)
 
 ## 🧪 CI/CD Pipeline
 

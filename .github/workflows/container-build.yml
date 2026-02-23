@@ -1,56 +1,44 @@
-name: Build and Push Container
+name: Build and Push Container (private registry)
 
 on:
   push:
     tags:
-      - 'v*.*.*' # Only build containers for version tags
+      - 'v*.*.*'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write
-  actions: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch full history to check branch
+          fetch-depth: 0
 
       - name: Verify tag is on main branch
         run: |
-          # Check if the tag is reachable from main branch
+          git fetch origin main --quiet
           if ! git merge-base --is-ancestor ${{ github.sha }} origin/main; then
             echo "❌ Tag ${{ github.ref_name }} is not on main branch"
-            echo "Container images are only built for tags on the main branch"
             exit 1
           fi
-          echo "✅ Tag ${{ github.ref_name }} is on main branch - proceeding with build"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set release version
+      - name: Set version
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Build Docker image
+      - name: Login to private registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build image
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}
-          IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          IMAGE=${{ secrets.REGISTRY_HOST }}/simple-transit
           docker build -t $IMAGE:${{ env.VERSION }} -t $IMAGE:latest .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
@@ -64,15 +52,8 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Push Docker image
+      - name: Push image
         run: |
           docker push $IMAGE:${{ env.VERSION }}
           docker push $IMAGE:latest
-
-      - name: Container build summary
-        run: |
-          echo "✅ Container image built and pushed successfully"
-          echo "📦 Image: ${{ env.IMAGE }}:${{ env.VERSION }}"
-          echo "📦 Latest: ${{ env.IMAGE }}:latest"
-          echo "🏷️  Tag: ${{ env.VERSION }}"
 

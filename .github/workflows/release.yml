@@ -79,21 +79,21 @@ jobs:
               ## 📦 Container Image
               The container image for this release is available at:
               \`\`\`bash
-              docker pull ghcr.io/${owner}/${repo}:${tag}
-              docker pull ghcr.io/${owner}/${repo}:latest
+              docker pull registry.niepi.org/simple-transit:${tag}
+              docker pull registry.niepi.org/simple-transit:latest
               \`\`\`
 
               ## 🚀 Quick Start
               \`\`\`bash
               # Run with Docker
-              docker run -p 8080:80 ghcr.io/${owner}/${repo}:${tag}
+              docker run -p 8080:80 registry.niepi.org/simple-transit:${tag}
 
               # Or install as PWA
               # Visit the app URL and click "Install" or "Add to Home Screen"
               \`\`\`
 
               ## 🔗 Links
-              - [Container Images](https://github.com/${owner}/${repo}/pkgs/container/${repo})
+              - [Container Images]((private registry))
               - [Documentation](https://github.com/${owner}/${repo}#readme)
               - [Workflow Documentation](https://github.com/${owner}/${repo}/blob/main/.github/WORKFLOW.md)`;
 
@@ -123,4 +123,4 @@ jobs:
         run: |
           echo "✅ GitHub Release ${{ env.VERSION }} created successfully"
           echo "🐳 Container build will be triggered automatically"
-          echo "📦 Container image will be available at: ghcr.io/${{ github.repository }}:${{ env.VERSION }}"
+          echo "📦 Container image will be available at: registry.niepi.org/simple-transit:${{ env.VERSION }}"

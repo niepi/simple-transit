@@ -17,10 +17,9 @@ This repository uses an automated release process that ensures container images 
 - Fails fast if any CI checks fail
 
 ### 3. Container Build Workflow (`.github/workflows/container-build.yml`)
-- Triggers **only when a release is published**
-- Builds and pushes container image to GHCR
+- Triggers on version tags (`v*.*.*`) on main
+- Builds and pushes container image to the private registry (`registry.niepi.org`)
 - Includes security scanning with Trivy
-- Updates the release with container availability info
 
 ## Creating a Release
 
@@ -75,4 +74,4 @@ graph TD
 ### No container image available
 - Verify the release was actually created (not just tagged)
 - Check if container-build workflow completed successfully
-- Container images are available at: `ghcr.io/[owner]/[repo]:[version]`
+- Container images are available at: `registry.niepi.org/simple-transit:[version]`
