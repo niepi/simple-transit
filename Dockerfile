@@ -34,8 +34,14 @@ COPY nginx-custom.conf /etc/nginx/nginx.conf
 COPY scripts/inject-runtime-env.sh /usr/local/bin/inject-runtime-env.sh
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-# NOTE: We intentionally do not run `apk update/upgrade` here.
-# Base images are pinned; upgrading in Docker builds makes builds flaky when mirrors/DNS are unavailable.
+# Patch critical/high CVEs from base image with minimal upgrades.
+# We avoid full `apk upgrade` for reproducibility, but upgrading specific packages is acceptable.
+RUN set -e; \
+    for i in 1 2 3 4 5; do \
+      apk add --no-cache --upgrade libpng && break; \
+      echo "apk add libpng failed (attempt $i/5), retrying..."; \
+      sleep 2; \
+    done
 
 # Configure nginx and permissions
 RUN mkdir -p /tmp && \
