@@ -38,12 +38,6 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Force registry host to resolve locally (self-hosted runner)
-        run: |
-          # On this host the registry is local behind Caddy. Force resolution to loopback to avoid
-          # intermittent public-IP hairpin/routing timeouts during docker login.
-          echo "127.0.0.1 ${{ secrets.REGISTRY_HOST }}" | sudo tee -a /etc/hosts
-
       - name: Login to private registry
         uses: docker/login-action@v3
         with:
@@ -63,6 +57,10 @@ jobs:
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@0.31.0
+        env:
+          # Prefer GHCR for DB downloads (gcr.io/mirror can be flaky from some networks).
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
         with:
           image-ref: ${{ env.IMAGE }}:${{ env.VERSION }}
           format: table
