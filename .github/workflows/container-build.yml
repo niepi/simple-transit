@@ -47,12 +47,14 @@ jobs:
       - name: "Preflight: registry reachable"
         run: |
           set -euo pipefail
+          # /v2/ returns 401 when reachable but unauthenticated; that's OK.
           for i in 1 2 3 4 5; do
-            if curl -fsS --max-time 5 "https://${{ secrets.REGISTRY_HOST }}/v2/" >/dev/null; then
-              echo "registry ok"
+            code=$(curl -sS -o /dev/null -m 5 -w "%{http_code}" "https://${{ secrets.REGISTRY_HOST }}/v2/" || true)
+            if [[ "$code" == "200" || "$code" == "401" ]]; then
+              echo "registry reachable (http $code)"
               exit 0
             fi
-            echo "registry preflight failed (attempt $i/5), retrying..."
+            echo "registry preflight failed (http $code) (attempt $i/5), retrying..."
             sleep 2
           done
           echo "registry preflight failed"
