@@ -177,7 +177,7 @@ function toggleFavorite() {
         <div class="flex-1 mx-4 min-w-0">
           <div class="font-medium leading-tight break-words hyphens-auto" lang="de">{{ departure.direction }}</div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            {{ departure.platform ? `Platform ${departure.platform}` : '' }}
+            {{ departure.platform ? ('Platform ' + departure.platform) : '' }}
           </div>
         </div>
         
@@ -190,8 +190,8 @@ function toggleFavorite() {
             Cancelled
           </div>
           <div v-else-if="departure.delay && departure.delay !== 0" 
-               :class="['text-sm', (departure.delay ?? 0) > 5 ? 'text-yellow-500' : 'text-green-500']"> <!-- Simplified -->
-            {{ (departure.delay ?? 0) > 0 ? `+${Math.floor(departure.delay)}` : departure.delay }} min
+               :class="['text-sm', ((departure.delay != null ? departure.delay : 0) > 5) ? 'text-yellow-500' : 'text-green-500']"> <!-- Simplified -->
+            {{ (departure.delay != null ? departure.delay : 0) > 0 ? ('+' + Math.floor(Number(departure.delay))) : departure.delay }} min
           </div>
           <div v-else class="text-sm text-green-500"> <!-- Simplified -->
             On time

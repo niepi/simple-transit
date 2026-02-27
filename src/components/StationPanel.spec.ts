@@ -13,8 +13,8 @@ global.fetch = vi.fn()
 vi.mock('./TransitIcon.vue', () => ({
   default: {
     name: 'TransitIcon',
-    props: ['type', 'class'],
-    template: '<span data-testid="transit-icon" :class="class">ICON</span>',
+    props: ['type'],
+    template: '<span data-testid="transit-icon">ICON</span>',
   },
 }))
 

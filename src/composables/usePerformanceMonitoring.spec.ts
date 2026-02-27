@@ -4,13 +4,20 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 
 // Mock performance and PerformanceObserver
-const mockPerformanceObserver = vi.fn()
+// PerformanceObserver must be constructable (used via `new PerformanceObserver(cb)`)
 const mockPerformanceObserverInstance = {
   observe: vi.fn(),
   disconnect: vi.fn(),
 }
 
-global.PerformanceObserver = vi.fn(() => mockPerformanceObserverInstance)
+class MockPerformanceObserver {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_cb: any) {
+    return mockPerformanceObserverInstance as any
+  }
+}
+
+global.PerformanceObserver = MockPerformanceObserver as any
 global.performance = {
   ...global.performance,
   now: vi.fn(() => 1000),
