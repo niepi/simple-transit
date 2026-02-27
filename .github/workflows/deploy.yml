@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [ main ]
+  # Disabled by default: this project is deployed as a container to web3.
+  # Run manually if you explicitly want to publish GitHub Pages.
   workflow_dispatch:
 
 permissions:
