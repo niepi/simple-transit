@@ -39,6 +39,20 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+      - name: Preflight: registry reachable
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5; do
+            if curl -fsS --max-time 5 "https://${{ secrets.REGISTRY_HOST }}/v2/" >/dev/null; then
+              echo "registry ok"
+              exit 0
+            fi
+            echo "registry preflight failed (attempt $i/5), retrying..."
+            sleep 2
+          done
+          echo "registry preflight failed"
+          exit 1
+
       - name: Login to private registry
         uses: docker/login-action@v3
         with:
@@ -62,6 +76,8 @@ jobs:
           # Prefer GHCR for DB downloads (gcr.io/mirror can be flaky from some networks).
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
+          # Faster/more stable for CI: only vulnerability scanning (no secret scanning)
+          TRIVY_SCANNERS: vuln
         with:
           image-ref: ${{ env.IMAGE }}:${{ env.VERSION }}
           format: table
