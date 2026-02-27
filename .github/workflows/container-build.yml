@@ -67,6 +67,6 @@ jobs:
 
       - name: Push image
         run: |
-          docker push $IMAGE:${{ env.VERSION }}
-          docker push $IMAGE:latest
+          docker push ${{ env.IMAGE }}:${{ env.VERSION }}
+          docker push ${{ env.IMAGE }}:latest
 

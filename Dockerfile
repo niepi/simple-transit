@@ -3,18 +3,20 @@ FROM node:25.7-alpine AS builder
 
 WORKDIR /app
 
-# Update Alpine packages to fix security vulnerabilities in build stage
-RUN apk update && \
-    apk upgrade && \
-    rm -rf /var/cache/apk/*
+# NOTE: We intentionally do not run `apk update/upgrade` here.
+# Base images are pinned; upgrading in Docker builds makes builds flaky when mirrors/DNS are unavailable.
 
 # Install dependencies and build
 COPY package*.json ./
 COPY tsconfig*.json ./
 
 # Install dependencies with dev dependencies for build
-RUN npm install -g npm@latest && \
-    NODE_ENV=development npm install --legacy-peer-deps && \
+# Configure retries/timeouts to reduce flakiness in CI.
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-factor 2 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    NODE_ENV=development npm ci --legacy-peer-deps && \
     npm cache clean --force
 
 ENV NODE_ENV=production
@@ -32,10 +34,8 @@ COPY nginx-custom.conf /etc/nginx/nginx.conf
 COPY scripts/inject-runtime-env.sh /usr/local/bin/inject-runtime-env.sh
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-# Update Alpine packages to fix security vulnerabilities
-RUN apk update && \
-    apk upgrade && \
-    rm -rf /var/cache/apk/*
+# NOTE: We intentionally do not run `apk update/upgrade` here.
+# Base images are pinned; upgrading in Docker builds makes builds flaky when mirrors/DNS are unavailable.
 
 # Configure nginx and permissions
 RUN mkdir -p /tmp && \
