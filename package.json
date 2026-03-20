@@ -45,7 +45,7 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "undici-types": "7.24.4",
+    "undici-types": "7.24.5",
     "unplugin-icons": "^23.0.1",
     "vite": "8.0.1",
     "vitest": "^4.1.0",
