@@ -80,7 +80,7 @@ jobs:
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
       - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@0.31.0
+        uses: aquasecurity/trivy-action@master
         env:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
