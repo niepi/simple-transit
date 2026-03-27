@@ -157,11 +157,13 @@ export default defineConfig(({ command, mode }) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['vue', 'pinia', '@vueuse/core'],
-          'map': ['leaflet'],
-          'ui': ['@headlessui/vue', 'element-plus'],
-          'icons': ['@heroicons/vue/24/solid', '@heroicons/vue/24/outline', '@element-plus/icons-vue']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@heroicons/vue') || id.includes('@element-plus/icons-vue')) return 'icons'
+            if (id.includes('@headlessui/vue') || id.includes('element-plus')) return 'ui'
+            if (id.includes('leaflet')) return 'map'
+            if (id.includes('vue') || id.includes('pinia') || id.includes('@vueuse/core')) return 'vendor'
+          }
         }
       }
     },
