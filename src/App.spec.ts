@@ -19,7 +19,28 @@ vi.mock('@vueuse/core', async () => {
 
 vi.mock('./stores/stations', () => ({ useStationsStore: vi.fn(() => ({ fetchNearbyStations: vi.fn(), sortedStations: [] })) }))
 vi.mock('./stores/favorites', () => ({ useFavoritesStore: vi.fn(() => ({ activeView: 'all', favoriteIds: [] })) }))
-vi.mock('leaflet', () => ({ default: { Icon: { Default: { mergeOptions: vi.fn(), prototype: {} } } } }))
+vi.mock('leaflet', () => ({
+  default: {
+    Icon: { Default: { mergeOptions: vi.fn(), prototype: {} } },
+    map: vi.fn(() => ({
+      setView: vi.fn().mockReturnThis(),
+      addTo: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      removeLayer: vi.fn().mockReturnThis(),
+      getCenter: vi.fn(() => ({ lat: 52.52, lng: 13.405 })),
+      invalidateSize: vi.fn(),
+      getZoom: vi.fn(() => 13)
+    })),
+    tileLayer: vi.fn(() => ({ addTo: vi.fn(), remove: vi.fn() })),
+    marker: vi.fn(() => ({ addTo: vi.fn(), bindPopup: vi.fn(), remove: vi.fn() })),
+    divIcon: vi.fn(),
+    control: {
+      zoom: vi.fn(() => ({ addTo: vi.fn() })),
+      attribution: vi.fn(() => ({ addTo: vi.fn() }))
+    },
+    latLng: vi.fn((lat, lng) => ({ lat, lng, distanceTo: vi.fn(() => 0) }))
+  }
+}))
 
 describe('App.vue', () => {
   beforeEach(() => {
