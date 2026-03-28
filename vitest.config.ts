@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    pool: forks,
+    pool: 'forks',
     poolOptions: { forks: { singleFork: true } },
     maxWorkers: 1,
     minWorkers: 1,
