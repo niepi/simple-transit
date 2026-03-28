@@ -107,7 +107,7 @@ describe('UI Rendering After Dependency Updates', () => {
 
   describe('Critical UI Elements Rendering', () => {
     it('renders all essential UI components without errors', () => {
-      const wrapper = mount(App, {
+      const wrapper = shallowMount(App, {
         global: {
           stubs: {
             StationPanel: true,

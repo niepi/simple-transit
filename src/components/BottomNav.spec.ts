@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, shallowMount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import BottomNav from './BottomNav.vue'
 import { useFavoritesStore } from '../stores/favorites'
@@ -40,7 +40,7 @@ describe('BottomNav.vue', () => {
   })
 
   it('renders "All Stations" and "Favorites" buttons', () => {
-    const wrapper = mount(BottomNav, {
+    const wrapper = shallowMount(BottomNav, {
       global: {
         plugins: [pinia],
       },
