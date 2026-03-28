@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   automerge:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, nibbler, docker]
     steps:
       - name: Automerge
         uses: pascalgn/automerge-action@v0.16.4
