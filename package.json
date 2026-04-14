@@ -41,7 +41,7 @@
     "autoprefixer": "^10.4.27",
     "glob": "^13.0.6",
     "jsdom": "^29.0.2",
-    "lru-cache": "^11.3.3",
+    "lru-cache": "^11.3.5",
     "postcss": "^8.5.9",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
