@@ -44,7 +44,7 @@
     "lru-cache": "^11.3.5",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "undici-types": "8.1.0",
     "unplugin-icons": "^23.0.1",
     "vite": "8.0.8",
