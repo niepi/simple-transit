@@ -42,7 +42,7 @@
     "glob": "^13.0.6",
     "jsdom": "^29.1.0",
     "lru-cache": "^11.3.5",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.12",
     "tailwindcss": "^4.2.3",
     "typescript": "^6.0.3",
     "undici-types": "8.1.0",
