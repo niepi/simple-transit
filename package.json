@@ -49,6 +49,6 @@
     "unplugin-icons": "^23.0.1",
     "vite": "8.0.16",
     "vitest": "^4.1.5",
-    "vue-tsc": "^3.3.3"
+    "vue-tsc": "^3.3.4"
   }
 }
