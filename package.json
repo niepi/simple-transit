@@ -38,7 +38,7 @@
     "@vitest/coverage-v8": "^4.1.9",
     "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.9.1",
-    "autoprefixer": "^10.5.1",
+    "autoprefixer": "^10.5.2",
     "glob": "^13.0.6",
     "jsdom": "^29.1.1",
     "lru-cache": "^11.5.1",
