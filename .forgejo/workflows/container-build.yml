@@ -88,6 +88,12 @@ jobs:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
           TRIVY_SCANNERS: vuln
+          # trivy-action's internal install step resolves aquasecurity/trivy's
+          # default branch via the GitHub REST API using $GITHUB_TOKEN;
+          # Forgejo auto-populates that var with a Forgejo-internal token,
+          # which github.com rejects as "Bad credentials". Blanking it falls
+          # back to unauthenticated (but valid) GitHub API access.
+          GITHUB_TOKEN: ""
         with:
           image-ref: ${{ env.IMAGE }}:${{ env.VERSION }}
           format: table
