@@ -79,29 +79,30 @@ jobs:
             .
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
+      - name: Install Trivy
+        # Not using aquasecurity/trivy-action: its bundled installer tries
+        # to git-clone aquasecurity/trivy as a fallback and that path is
+        # unreliable on Forgejo/act-based runners (fails either on GitHub
+        # API auth or a missing install script, inconsistently). The
+        # official install script (single-file fetch, no git/API calls)
+        # sidesteps that entirely. Pinned to 0.69.3: the last release
+        # confirmed unaffected by the March 2026 Trivy supply-chain
+        # compromise (GHSA-69fq-xp46-6x23).
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/v0.69.3/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin v0.69.3
+
       - name: Scan image with Trivy
-        # Pinned (not @master): @master's installer script path isn't
-        # compatible with how Forgejo/act-based runners lay out actions,
-        # causing "./trivy/contrib/install.sh: No such file or directory".
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0, pinned by commit SHA
+        # Scans the just-built local image (not yet pushed) via the local
+        # docker daemon, so a failing scan still blocks the push below.
         env:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
           TRIVY_SCANNERS: vuln
-        with:
-          # trivy-action's internal install step resolves aquasecurity/trivy's
-          # default branch via the GitHub REST API using github.token by
-          # default; Forgejo auto-populates that with a Forgejo-internal
-          # token, which github.com rejects as "Bad credentials". This
-          # input (documented for the equivalent GHES case) overrides it
-          # with a real, scope-less GitHub PAT used only for public reads.
-          token-setup-trivy: ${{ secrets.GH_PUBLIC_TOKEN }}
-          image-ref: ${{ env.IMAGE }}:${{ env.VERSION }}
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+        run: |
+          trivy image --format table --exit-code 1 --ignore-unfixed \
+            --vuln-type os,library --severity CRITICAL,HIGH \
+            "${{ env.IMAGE }}:${{ env.VERSION }}"
 
       - name: Push image
         run: |
