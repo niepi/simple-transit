@@ -70,7 +70,7 @@ jobs:
       - name: Build image
         run: |
           set -euo pipefail
-          IMAGE=${{ secrets.REGISTRY_HOST }}/simple-transit
+          IMAGE=${{ secrets.REGISTRY_HOST }}/niepi/simple-transit
           docker build --network=host \
             --label org.opencontainers.image.revision=${{ github.sha }} \
             --label org.opencontainers.image.source=https://github.com/niepi/simple-transit \
