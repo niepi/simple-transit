@@ -34,12 +34,12 @@ COPY nginx-custom.conf /etc/nginx/nginx.conf
 COPY scripts/inject-runtime-env.sh /usr/local/bin/inject-runtime-env.sh
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-# Patch critical/high CVEs from base image with minimal upgrades.
-# We avoid full `apk upgrade` for reproducibility, but upgrading specific packages is acceptable.
+# Patch HIGH CVEs from the base image: the Trivy gate in CI blocks shipping
+# otherwise. Full apk upgrade of the runtime stage only; the build stage is unchanged.
 RUN set -e; \
     for i in 1 2 3 4 5; do \
-      apk add --no-cache --upgrade libpng && break; \
-      echo "apk add libpng failed (attempt $i/5), retrying..."; \
+      apk upgrade --no-cache && break; \
+      echo "apk upgrade failed (attempt $i/5), retrying..."; \
       sleep 2; \
     done
 
