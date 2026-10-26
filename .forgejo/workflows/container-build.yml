@@ -93,8 +93,8 @@ jobs:
 
       - name: Trivy gate (blocks push and ship)
         env:
-          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
-          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
+          TRIVY_DB_REPOSITORY: mirror.gcr.io/aquasec/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: mirror.gcr.io/aquasec/trivy-java-db:1
           TRIVY_SCANNERS: vuln
         run: |
           set -euo pipefail
