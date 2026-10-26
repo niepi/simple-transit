@@ -75,7 +75,6 @@ jobs:
             --label org.opencontainers.image.revision=${{ github.sha }} \
             --label org.opencontainers.image.source=https://github.com/niepi/simple-transit \
             -t $IMAGE:${{ env.VERSION }} \
-            -t $IMAGE:latest \
             .
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
@@ -92,20 +91,42 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/v0.69.3/contrib/install.sh \
             | sh -s -- -b /usr/local/bin v0.69.3
 
-      - name: Scan image with Trivy
-        # Scans the just-built local image (not yet pushed) via the local
-        # docker daemon, so a failing scan still blocks the push below.
+      - name: Trivy gate (blocks push and ship)
         env:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
           TRIVY_SCANNERS: vuln
         run: |
-          trivy image --format table --exit-code 1 --ignore-unfixed \
-            --vuln-type os,library --severity CRITICAL,HIGH \
-            "${{ env.IMAGE }}:${{ env.VERSION }}"
+          set -euo pipefail
+          docker save "${{ env.IMAGE }}:${{ env.VERSION }}" -o /tmp/simple-transit-scan.tar
+          trivy image --input /tmp/simple-transit-scan.tar --format table --exit-code 1 --ignore-unfixed \
+            --vuln-type os,library --severity CRITICAL,HIGH
+          rm -f /tmp/simple-transit-scan.tar
 
-      - name: Push image
+      - name: Push scanned image to Forgejo
         run: |
           set -euo pipefail
-          docker push ${{ env.IMAGE }}:${{ env.VERSION }}
-          docker push ${{ env.IMAGE }}:latest
+          docker push "${{ env.IMAGE }}:${{ env.VERSION }}"
+
+      - name: Install crane (pinned, sha256 verified)
+        run: |
+          set -euo pipefail
+          curl -sfL -o /tmp/crane.tgz https://github.com/google/go-containerregistry/releases/download/v0.22.1/go-containerregistry_Linux_x86_64.tar.gz
+          echo "0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0  /tmp/crane.tgz" | sha256sum -c -
+          tar -xzf /tmp/crane.tgz -C /usr/local/bin crane
+          crane version
+
+      - name: Save tarball with crane and push to web3
+        env:
+          WEB3_HOST: ${{ secrets.WEB3_HOST }}
+          WEB3_SSH_KEY: ${{ secrets.WEB3_SSH_KEY }}
+          WEB3_KNOWN_HOSTS: ${{ secrets.WEB3_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          TAR="/tmp/simple-transit-${{ env.VERSION }}.tar"
+          crane pull --platform linux/amd64 "${{ env.IMAGE }}:${{ env.VERSION }}" "$TAR"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$WEB3_SSH_KEY" > ~/.ssh/web3 && chmod 600 ~/.ssh/web3
+          printf '%s\n' "$WEB3_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          scp -i ~/.ssh/web3 -o StrictHostKeyChecking=yes "$TAR" root@$WEB3_HOST:/srv/images/incoming/
+          rm -f "$TAR"
